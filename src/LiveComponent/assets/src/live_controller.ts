@@ -1,20 +1,26 @@
 import { Controller } from '@hotwired/stimulus';
-import { parseDirectives, DirectiveModifier } from './Directive/directives_parser';
-import { getModelDirectiveFromElement, getValueFromElement, elementBelongsToThisComponent } from './dom_utils';
+import Backend, { type BackendInterface } from './Backend/Backend';
 import Component, { proxifyComponent } from './Component';
-import Backend, { BackendInterface } from './Backend/Backend';
 import { StimulusElementDriver } from './Component/ElementDriver';
+import ChildComponentPlugin from './Component/plugins/ChildComponentPlugin';
+import LazyPlugin from './Component/plugins/LazyPlugin';
 import LoadingPlugin from './Component/plugins/LoadingPlugin';
-import ValidatedFieldsPlugin from './Component/plugins/ValidatedFieldsPlugin';
 import PageUnloadingPlugin from './Component/plugins/PageUnloadingPlugin';
+import type { PluginInterface } from './Component/plugins/PluginInterface';
 import PollingPlugin from './Component/plugins/PollingPlugin';
 import SetValueOntoModelFieldsPlugin from './Component/plugins/SetValueOntoModelFieldsPlugin';
-import { PluginInterface } from './Component/plugins/PluginInterface';
+import ValidatedFieldsPlugin from './Component/plugins/ValidatedFieldsPlugin';
+import { type DirectiveModifier, parseDirectives } from './Directive/directives_parser';
 import getModelBinding from './Directive/get_model_binding';
-import QueryStringPlugin from './Component/plugins/QueryStringPlugin';
-import ChildComponentPlugin from './Component/plugins/ChildComponentPlugin';
+import {
+    elementBelongsToThisComponent,
+    getModelDirectiveFromElement,
+    getValueFromElement,
+    isNumericalInputElement,
+    isTextareaElement,
+    isTextualInputElement,
+} from './dom_utils';
 import getElementAsTagText from './Util/getElementAsTagText';
-import LazyPlugin from './Component/plugins/LazyPlugin';
 
 export { Component };
 export { getComponent } from './ComponentRegistry';
@@ -30,27 +36,25 @@ export interface LiveController {
     element: HTMLElement;
     component: Component;
 }
+
 export default class LiveControllerDefault extends Controller<HTMLElement> implements LiveController {
     static values = {
         name: String,
         url: String,
         props: { type: Object, default: {} },
         propsUpdatedFromParent: { type: Object, default: {} },
-        csrf: String,
         listeners: { type: Array, default: [] },
         eventsToEmit: { type: Array, default: [] },
         eventsToDispatch: { type: Array, default: [] },
         debounce: { type: Number, default: 150 },
         fingerprint: { type: String, default: '' },
         requestMethod: { type: String, default: 'post' },
-        queryMapping: { type: Object, default: {} },
     };
 
     declare readonly nameValue: string;
     declare readonly urlValue: string;
     declare readonly propsValue: any;
     declare propsUpdatedFromParentValue: any;
-    declare readonly csrfValue: string;
     declare readonly listenersValue: Array<{ event: string; action: string }>;
     declare readonly eventsToEmitValue: Array<{
         event: string;
@@ -63,7 +67,6 @@ export default class LiveControllerDefault extends Controller<HTMLElement> imple
     declare readonly debounceValue: number;
     declare readonly fingerprintValue: string;
     declare readonly requestMethodValue: 'get' | 'post';
-    declare readonly queryMappingValue: { [p: string]: { name: string } };
 
     /** The component, wrapped in the convenience Proxy */
     private proxiedComponent: Component;
@@ -79,7 +82,7 @@ export default class LiveControllerDefault extends Controller<HTMLElement> imple
     private pendingFiles: { [key: string]: HTMLInputElement } = {};
 
     static backendFactory: (controller: LiveControllerDefault) => BackendInterface = (controller) =>
-        new Backend(controller.urlValue, controller.requestMethodValue, controller.csrfValue);
+        new Backend(controller.urlValue, controller.requestMethodValue);
 
     initialize() {
         this.mutationObserver = new MutationObserver(this.onMutations.bind(this));
@@ -148,7 +151,7 @@ export default class LiveControllerDefault extends Controller<HTMLElement> imple
                 }
             });
             validModifiers.set('debounce', (modifier: DirectiveModifier) => {
-                debounce = modifier.value ? parseInt(modifier.value) : true;
+                debounce = modifier.value ? Number.parseInt(modifier.value) : true;
             });
             validModifiers.set('files', (modifier: DirectiveModifier) => {
                 if (!modifier.value) {
@@ -287,8 +290,10 @@ export default class LiveControllerDefault extends Controller<HTMLElement> imple
         );
         this.proxiedComponent = proxifyComponent(this.component);
 
-        // @ts-ignore Adding the dynamic property
-        this.element.__component = this.proxiedComponent;
+        Object.defineProperty(this.element, '__component', {
+            value: this.proxiedComponent,
+            writable: true,
+        });
 
         if (this.hasDebounceValue) {
             this.component.defaultDebounce = this.debounceValue;
@@ -301,7 +306,6 @@ export default class LiveControllerDefault extends Controller<HTMLElement> imple
             new PageUnloadingPlugin(),
             new PollingPlugin(),
             new SetValueOntoModelFieldsPlugin(),
-            new QueryStringPlugin(this.queryMappingValue),
             new ChildComponentPlugin(this.component),
         ];
         plugins.forEach((plugin) => {
@@ -428,6 +432,36 @@ export default class LiveControllerDefault extends Controller<HTMLElement> imple
         }
 
         const finalValue = getValueFromElement(element, this.component.valueStore);
+
+        if (isTextualInputElement(element) || isTextareaElement(element)) {
+            if (
+                modelBinding.minLength !== null &&
+                typeof finalValue === 'string' &&
+                finalValue.length < modelBinding.minLength
+            ) {
+                return;
+            }
+
+            if (
+                modelBinding.maxLength !== null &&
+                typeof finalValue === 'string' &&
+                finalValue.length > modelBinding.maxLength
+            ) {
+                return;
+            }
+        }
+
+        if (isNumericalInputElement(element)) {
+            const numericValue = Number(finalValue);
+
+            if (modelBinding.minValue !== null && numericValue < modelBinding.minValue) {
+                return;
+            }
+
+            if (modelBinding.maxValue !== null && numericValue > modelBinding.maxValue) {
+                return;
+            }
+        }
 
         this.component.set(modelBinding.modelName, finalValue, modelBinding.shouldRender, modelBinding.debounce);
     }

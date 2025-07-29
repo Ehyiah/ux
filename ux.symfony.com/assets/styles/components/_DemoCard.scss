@@ -15,7 +15,9 @@
   transition: color 250ms ease-in-out, transform 750ms ease-in-out, box-shadow 750ms ease-in-out;
   transform: translateY(0);
   box-shadow: 0 0 0 transparent;
+  background: var(--bs-body-bg);
 }
+
 .DemoCard:hover {
   transition: color 250ms ease-in-out, transform 250ms ease-in-out, box-shadow 250ms ease-in-out;
   transform: translateY(-.25rem);
@@ -35,17 +37,14 @@
 }
 
 .DemoCard__image {
-  max-height: 100%;
-  width: 100%;
+  max-width: 100%;
   display: block;
-  transition: transform 500ms linear;
-  transform: scale(1) translateY(0);
-  border-radius: .25rem;
-  transform-style: preserve-3d;
-  opacity: .80;
-}
-.DemoCard:hover .DemoCard__image {
+  object-fit: cover;
   opacity: .90;
+}
+
+.DemoCard:hover .DemoCard__image {
+  opacity: .93;
 }
 
 .DemoCard__content {
@@ -63,7 +62,6 @@
   font-weight: 700;
   margin: 0;
   font-family: var(--font-family-title);
-  padding: .25rem;
 }
 
 .DemoCard__description {
@@ -73,13 +71,17 @@
   transition: all 250ms ease-in-out;
   opacity: .65;
   line-height: 1.4;
-  padding: .25rem;
   margin: 0;
 }
+
 .DemoCard:hover .DemoCard__description {
   opacity: .85;
 }
 
 .DemoCard__tags {
+  margin-top: auto;
   margin-bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
 }

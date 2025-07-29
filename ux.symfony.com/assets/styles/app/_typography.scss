@@ -2,16 +2,9 @@
 h1 {
   font-size: 52px;
   font-weight: 700;
-  letter-spacing: -0.035em;
-}
-
-h1.ubuntu {
   line-height: 60px;
-}
-
-h1 .playfair {
-  font-style: italic;
-  line-height: 70px;
+  letter-spacing: -0.035em;
+  font-family: var(--font-family-title);
 }
 
 h2.ubuntu {
@@ -27,8 +20,8 @@ h3, a.component-title {
   font-size: 28px;
   line-height: 32px;
   letter-spacing: -1px;
-  color: #0A0A0A;
   text-decoration: none;
+  color: var(--bs-body-color);
 }
 
 h4.ubuntu {
@@ -53,6 +46,26 @@ h4.ubuntu {
     width: 100%
   }
 }
+
+.code-description :is(h2, h3) {
+  font-family: var(--font-family-title);
+}
+.code-description h2 {
+  font-size: 2.5em;
+  margin-block-end: 1.5rem;
+}
+.code-description h3 {
+  font-size: 1.65em;
+  font-weight: 500;
+  margin-block-end: 1.125rem;
+  margin-top: 2.25rem;
+}
+
+.code-description:hover strong {
+  background: var(--bs-body-color);
+    color: var(--bs-body-bg);
+}
+
 
 .ubuntu-header {
   font-family: var(--font-family-title);
@@ -82,15 +95,9 @@ h4.ubuntu {
 
 
 @media (max-width: 576px) {
-  h1.ubuntu {
+  h1 {
     font-size: 36px;
     line-height: 41px;
-    letter-spacing: -1px;
-  }
-
-  h1.playfair {
-    font-size: 36px;
-    line-height: 48px;
     letter-spacing: -1px;
   }
 

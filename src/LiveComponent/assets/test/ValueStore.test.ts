@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import ValueStore from '../src/Component/ValueStore';
 
 describe('ValueStore', () => {
@@ -32,7 +33,7 @@ describe('ValueStore', () => {
         {
             props: {
                 user: 111,
-                'user.FirstName': 'Ryan'
+                'user.FirstName': 'Ryan',
             },
             name: 'user',
             expected: 111,
@@ -55,7 +56,7 @@ describe('ValueStore', () => {
         },
         {
             props: { firstName: 'Ryan' },
-            updated: [ { prop: 'firstName', value: 'Kevin' }],
+            updated: [{ prop: 'firstName', value: 'Kevin' }],
             name: 'firstName',
             expected: 'Kevin',
         },
@@ -65,7 +66,7 @@ describe('ValueStore', () => {
                     firstName: 'Ryan',
                 },
             },
-            updated: [ { prop: 'user.firstName', value: 'Kevin' }],
+            updated: [{ prop: 'user.firstName', value: 'Kevin' }],
             name: 'user.firstName',
             expected: 'Kevin',
         },
@@ -104,7 +105,7 @@ describe('ValueStore', () => {
         {
             props: {
                 user: 5,
-                'user.firstName': 'Ryan'
+                'user.firstName': 'Ryan',
             },
             name: 'user.firstName',
             expected: true,
@@ -121,7 +122,7 @@ describe('ValueStore', () => {
         {
             props: {
                 user: 111,
-                'user.firstName': 'Ryan'
+                'user.firstName': 'Ryan',
             },
             name: 'user',
             expected: true,
@@ -179,7 +180,7 @@ describe('ValueStore', () => {
                 user: {
                     firstName: 'Ryan',
                     lastName: 'Weaver',
-                }
+                },
             },
             set: 'user',
             to: {
@@ -232,11 +233,8 @@ describe('ValueStore', () => {
         expect(store.get('firstName')).toEqual('Wouter');
     });
 
-
     it('getOriginalProps() returns props', () => {
-        const container = new ValueStore(
-            { city: 'Grand Rapids', user: 'Kevin', product: 5 },
-        );
+        const container = new ValueStore({ city: 'Grand Rapids', user: 'Kevin', product: 5 });
 
         expect(container.getOriginalProps()).toEqual({ city: 'Grand Rapids', user: 'Kevin', product: 5 });
     });
@@ -293,7 +291,7 @@ describe('ValueStore', () => {
                 user: {
                     firstName: 'Ryan',
                     lastName: 'Weaver',
-                }
+                },
             },
             newProps: {
                 user: {

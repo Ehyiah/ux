@@ -1,7 +1,14 @@
 import { Controller } from '@hotwired/stimulus';
 import TomSelect from 'tom-select';
-import { TPluginHash } from 'tom-select/dist/types/contrib/microplugin';
-import { RecursivePartial, TomSettings, TomTemplates, TomLoadCallback } from 'tom-select/dist/types/types';
+import type { TPluginHash } from 'tom-select/dist/types/contrib/microplugin';
+import type {
+    RecursivePartial,
+    TomLoadCallback,
+    TomOption,
+    TomSettings,
+    TomTemplates,
+} from 'tom-select/dist/types/types';
+import type { escape_html } from 'tom-select/dist/types/utils';
 
 export interface AutocompletePreConnectOptions {
     options: any;
@@ -9,6 +16,10 @@ export interface AutocompletePreConnectOptions {
 export interface AutocompleteConnectOptions {
     tomSelect: TomSelect;
     options: any;
+}
+interface OptionDataStructure {
+    value: string;
+    text: string;
 }
 
 export default class extends Controller {
@@ -18,6 +29,7 @@ export default class extends Controller {
         loadingMoreText: String,
         noResultsFoundText: String,
         noMoreResultsText: String,
+        createOptionText: String,
         minCharacters: Number,
         tomSelectOptions: Object,
         preload: String,
@@ -28,6 +40,7 @@ export default class extends Controller {
     declare readonly loadingMoreTextValue: string;
     declare readonly noMoreResultsTextValue: string;
     declare readonly noResultsFoundTextValue: string;
+    declare readonly createOptionTextValue: string;
     declare readonly minCharactersValue: number;
     declare readonly hasMinCharactersValue: boolean;
     declare readonly tomSelectOptionsValue: object;
@@ -38,7 +51,7 @@ export default class extends Controller {
     private mutationObserver: MutationObserver;
     private isObserving = false;
     private hasLoadedChoicesPreviously = false;
-    private originalOptions: Array<{ value: string; text: string; group: string | null }> = [];
+    private originalOptions: Array<OptionDataStructure> = [];
 
     initialize() {
         if (!this.mutationObserver) {
@@ -115,6 +128,10 @@ export default class extends Controller {
         }
     }
 
+    urlValueChanged() {
+        this.resetTomSelect();
+    }
+
     #getCommonConfig(): Partial<TomSettings> {
         const plugins: TPluginHash = {};
 
@@ -136,6 +153,9 @@ export default class extends Controller {
             no_results: () => {
                 return `<div class="no-results">${this.noResultsFoundTextValue}</div>`;
             },
+            option_create: (data: TomOption, escapeData: typeof escape_html): string => {
+                return `<div class="create">${this.createOptionTextValue.replace('%placeholder%', `<strong>${escapeData(data.input)}</strong>`)}</div>`;
+            },
         };
 
         const config: RecursivePartial<TomSettings> = {
@@ -146,6 +166,47 @@ export default class extends Controller {
                 this.tomSelect.setTextboxValue('');
             },
             closeAfterSelect: true,
+            // fix positioning (in the dropdown) of options added through addOption()
+            onOptionAdd: (value: string, data: { [key: string]: any }) => {
+                let parentElement = this.tomSelect.input as Element;
+                let optgroupData = null;
+
+                const optgroup = data[this.tomSelect.settings.optgroupField];
+                if (optgroup && this.tomSelect.optgroups) {
+                    optgroupData = this.tomSelect.optgroups[optgroup];
+                    if (optgroupData) {
+                        const optgroupElement = parentElement.querySelector(`optgroup[label="${optgroupData.label}"]`);
+                        if (optgroupElement) {
+                            parentElement = optgroupElement;
+                        }
+                    }
+                }
+
+                const optionElement = document.createElement('option');
+                optionElement.value = value;
+                optionElement.text = data[this.tomSelect.settings.labelField];
+
+                const optionOrder = data.$order;
+                let orderedOption = null;
+
+                for (const [, tomSelectOption] of Object.entries(this.tomSelect.options)) {
+                    if (tomSelectOption.$order === optionOrder) {
+                        orderedOption = parentElement.querySelector(
+                            `:scope > option[value="${CSS.escape(tomSelectOption[this.tomSelect.settings.valueField])}"]`
+                        );
+
+                        break;
+                    }
+                }
+
+                if (orderedOption) {
+                    orderedOption.insertAdjacentElement('afterend', optionElement);
+                } else if (optionOrder >= 0) {
+                    parentElement.append(optionElement);
+                } else {
+                    parentElement.prepend(optionElement);
+                }
+            },
         };
 
         // for non-autocompleting input elements, avoid the "No results" message that always shows
@@ -153,11 +214,11 @@ export default class extends Controller {
             config.shouldLoad = () => false;
         }
 
-        return this.#mergeObjects(config, this.tomSelectOptionsValue);
+        return this.#mergeConfigs(config, this.tomSelectOptionsValue);
     }
 
     #createAutocomplete(): TomSelect {
-        const config = this.#mergeObjects(this.#getCommonConfig(), {
+        const config = this.#mergeConfigs(this.#getCommonConfig(), {
             maxOptions: this.getMaxOptions(),
         });
 
@@ -165,22 +226,21 @@ export default class extends Controller {
     }
 
     #createAutocompleteWithHtmlContents(): TomSelect {
-        const config = this.#mergeObjects(this.#getCommonConfig(), {
+        const commonConfig = this.#getCommonConfig();
+        const labelField = commonConfig.labelField ?? 'text';
+
+        const config = this.#mergeConfigs(commonConfig, {
             maxOptions: this.getMaxOptions(),
             score: (search: string) => {
                 const scoringFunction = this.tomSelect.getScoreFunction(search);
                 return (item: any) => {
                     // strip HTML tags from each option's searchable text
-                    return scoringFunction({ ...item, text: this.#stripTags(item.text) });
+                    return scoringFunction({ ...item, text: this.#stripTags(item[labelField]) });
                 };
             },
             render: {
-                item: function (item: any) {
-                    return `<div>${item.text}</div>`;
-                },
-                option: function (item: any) {
-                    return `<div>${item.text}</div>`;
-                },
+                item: (item: any) => `<div>${item[labelField]}</div>`,
+                option: (item: any) => `<div>${item[labelField]}</div>`,
             },
         });
 
@@ -188,7 +248,10 @@ export default class extends Controller {
     }
 
     #createAutocompleteWithRemoteData(autocompleteEndpointUrl: string, minCharacterLength: number | null): TomSelect {
-        const config: RecursivePartial<TomSettings> = this.#mergeObjects(this.#getCommonConfig(), {
+        const commonConfig = this.#getCommonConfig();
+        const labelField = commonConfig.labelField ?? 'text';
+
+        const config: RecursivePartial<TomSettings> = this.#mergeConfigs(commonConfig, {
             firstUrl: (query: string) => {
                 const separator = autocompleteEndpointUrl.includes('?') ? '&' : '?';
 
@@ -231,18 +294,10 @@ export default class extends Controller {
             },
             optgroupField: 'group_by',
             // avoid extra filtering after results are returned
-            score: function (search: string) {
-                return function (item: any) {
-                    return 1;
-                };
-            },
+            score: (search: string) => (item: any) => 1,
             render: {
-                option: function (item: any) {
-                    return `<div>${item.text}</div>`;
-                },
-                item: function (item: any) {
-                    return `<div>${item.text}</div>`;
-                },
+                option: (item: any) => `<div>${item[labelField]}</div>`,
+                item: (item: any) => `<div>${item[labelField]}</div>`,
                 loading_more: (): string => {
                     return `<div class="loading-more-results">${this.loadingMoreTextValue}</div>`;
                 },
@@ -251,6 +306,9 @@ export default class extends Controller {
                 },
                 no_results: (): string => {
                     return `<div class="no-results">${this.noResultsFoundTextValue}</div>`;
+                },
+                option_create: (data: TomOption, escapeData: typeof escape_html): string => {
+                    return `<div class="create">${this.createOptionTextValue.replace('%placeholder%', `<strong>${escapeData(data.input)}</strong>`)}</div>`;
                 },
             },
             preload: this.preload,
@@ -267,8 +325,47 @@ export default class extends Controller {
         return string.replace(/(<([^>]+)>)/gi, '');
     }
 
-    #mergeObjects(object1: any, object2: any): any {
-        return { ...object1, ...object2 };
+    #mergeConfigs(config1: any, config2: any): any {
+        return {
+            ...config1,
+            ...config2,
+            // Plugins from both configs should be merged together.
+            plugins: this.#normalizePlugins({
+                ...this.#normalizePluginsToHash(config1.plugins || {}),
+                ...this.#normalizePluginsToHash(config2.plugins || {}),
+            }),
+        };
+    }
+
+    /**
+     * Normalizes the plugins to a hash, so that we can merge them easily.
+     */
+    #normalizePluginsToHash = (plugins: TomSettings['plugins']): TPluginHash => {
+        if (Array.isArray(plugins)) {
+            return plugins.reduce((acc, plugin) => {
+                if (typeof plugin === 'string') {
+                    acc[plugin] = {};
+                }
+
+                if (typeof plugin === 'object' && plugin.name) {
+                    acc[plugin.name] = plugin.options || {};
+                }
+
+                return acc;
+            }, {} as TPluginHash);
+        }
+
+        return plugins;
+    };
+
+    #normalizePlugins(plugins: TPluginHash): TPluginHash {
+        return Object.entries(plugins).reduce((acc, [pluginName, pluginOptions]) => {
+            if (pluginOptions !== false) {
+                acc[pluginName] = pluginOptions;
+            }
+
+            return acc;
+        }, {} as TPluginHash);
     }
 
     /**
@@ -312,11 +409,11 @@ export default class extends Controller {
             return 'focus';
         }
 
-        if (this.preloadValue == 'false') {
+        if (this.preloadValue === 'false') {
             return false;
         }
 
-        if (this.preloadValue == 'true') {
+        if (this.preloadValue === 'true') {
             return true;
         }
 
@@ -337,8 +434,6 @@ export default class extends Controller {
             this.element.innerHTML = currentHtml;
             this.initializeTomSelect();
             this.tomSelect.setValue(currentValue);
-
-            this.startMutationObserver();
         }
     }
 
@@ -411,20 +506,16 @@ export default class extends Controller {
         }
     }
 
-    private createOptionsDataStructure(
-        selectElement: HTMLSelectElement
-    ): Array<{ value: string; text: string; group: string | null }> {
+    private createOptionsDataStructure(selectElement: HTMLSelectElement): Array<OptionDataStructure> {
         return Array.from(selectElement.options).map((option) => {
-            const optgroup = option.closest('optgroup');
             return {
                 value: option.value,
                 text: option.text,
-                group: optgroup ? optgroup.label : null,
             };
         });
     }
 
-    private areOptionsEquivalent(newOptions: Array<{ value: string; text: string; group: string | null }>): boolean {
+    private areOptionsEquivalent(newOptions: Array<OptionDataStructure>): boolean {
         // remove the empty option, which is added by TomSelect so may be missing from new options
         const filteredOriginalOptions = this.originalOptions.filter((option) => option.value !== '');
         const filteredNewOptions = newOptions.filter((option) => option.value !== '');
@@ -444,8 +535,7 @@ export default class extends Controller {
             return false;
         }
 
-        const normalizeOption = (option: { value: string; text: string; group: string | null }) =>
-            `${option.value}-${option.text}-${option.group}`;
+        const normalizeOption = (option: OptionDataStructure) => `${option.value}-${option.text}`;
         const originalOptionsSet = new Set(filteredOriginalOptions.map(normalizeOption));
         const newOptionsSet = new Set(filteredNewOptions.map(normalizeOption));
 

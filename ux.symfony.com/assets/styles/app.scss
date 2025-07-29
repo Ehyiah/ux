@@ -11,11 +11,53 @@
 @import "../../vendor/twbs/bootstrap/scss/variables";
 @import "../../vendor/twbs/bootstrap/scss/variables-dark";
 
+// Remove Bootstrap variables/overrides
+$theme-colors: map-remove($theme-colors, "info", "light");
+
 // Boostrap remainder of required parts
 @import "../../vendor/twbs/bootstrap/scss/maps";
 @import "../../vendor/twbs/bootstrap/scss/mixins";
 @import "../../vendor/twbs/bootstrap/scss/utilities";
 @import "../../vendor/twbs/bootstrap/scss/root";
+
+// Remove multiple utilities with a comma-separated list
+// Margin
+$utilities: map-remove(
+    $utilities,
+    // Background
+    "bg-opacity",
+    "subtle-background-color",
+
+    // Negative margin
+    "negative-margin",
+    "negative-margin-x",
+    "negative-margin-y",
+    "negative-margin-top",
+    "negative-margin-end",
+    "negative-margin-bottom",
+    "negative-margin-start",
+    // Link
+    "link-opacity",
+    "link-offset",
+    "link-underline",
+    "link-underline-opacity",
+    // Border
+    "border",
+    "border-top",
+    "border-end",
+    "border-bottom",
+    "border-start",
+    "border-color",
+    "subtle-border-color",
+    "border-width",
+    "border-opacity",
+    // Position
+    "top",
+    "bottom",
+    "start",
+    "end",
+    "translate-middle",
+);
 
 // Layout & components
 @import "../../vendor/twbs/bootstrap/scss/reboot";
@@ -33,7 +75,7 @@
 // @import "../../vendor/twbs/bootstrap/scss/navbar";
 @import "../../vendor/twbs/bootstrap/scss/card";
 // @import "../../vendor/twbs/bootstrap/scss/accordion";
-// @import "../../vendor/twbs/bootstrap/scss/breadcrumb";
+@import "../../vendor/twbs/bootstrap/scss/breadcrumb";
 // @import "../../vendor/twbs/bootstrap/scss/pagination";
 // @import "../../vendor/twbs/bootstrap/scss/badge";
 @import "../../vendor/twbs/bootstrap/scss/alert";
@@ -48,8 +90,23 @@
 // @import "../../vendor/twbs/bootstrap/scss/spinners";
 // @import "../../vendor/twbs/bootstrap/scss/offcanvas";
 // @import "../../vendor/twbs/bootstrap/scss/placeholders";
+
 // Helpers
-@import "../../vendor/twbs/bootstrap/scss/helpers";
+@import "../../vendor/twbs/bootstrap/scss/helpers/clearfix";
+//@import "../../vendor/twbs/bootstrap/scss/helpers/color-bg";
+//@import "../../vendor/twbs/bootstrap/scss/helpers/colored-links";
+@import "../../vendor/twbs/bootstrap/scss/helpers/focus-ring";
+//@import "../../vendor/twbs/bootstrap/scss/helpers/icon-link";
+//@import "../../vendor/twbs/bootstrap/scss/helpers/ratio";
+//@import "../../vendor/twbs/bootstrap/scss/helpers/position";
+@import "../../vendor/twbs/bootstrap/scss/helpers/stacks";
+//@import "../../vendor/twbs/bootstrap/scss/helpers/visually-hidden";
+@import "../../vendor/twbs/bootstrap/scss/helpers/stretched-link";
+//@import "../../vendor/twbs/bootstrap/scss/helpers/text-truncation";
+//@import "../../vendor/twbs/bootstrap/scss/helpers/vr";
+
+
+
 // Utilities
 @import "../../vendor/twbs/bootstrap/scss/utilities/api";
 
@@ -61,38 +118,49 @@
 
 // Layouts
 @import "layouts/container";
+@import "layouts/cluster";
 @import "layouts/grid";
 @import "layouts/section";
 
 // Components
+@import "components/Badge";
 @import "components/Banner";
+@import "components/Button";
 @import "components/Browser";
 @import "components/Changelog";
 @import "components/DataList";
-@import "components/demo-container";
+@import "components/DemoContainer";
 @import "components/DemoCard";
 @import "components/DocsLink";
-@import "components/file_tree";
+@import "components/FeatureBox";
+@import "components/FileTree";
 @import "components/Icon";
 @import "components/IconGrid";
 @import "components/IconModal";
 @import "components/IconSearch";
 @import "components/IconSetCard";
+@import "components/Pagination";
 @import "components/ProductGrid";
 @import "components/PackageHeader";
 @import "components/PackageBox";
+@import "components/PackageList";
+@import "components/SidebarNav";
+@import "components/Cookbook";
+@import "components/SupportBox";
 @import "components/Tabs";
 @import "components/Tag";
 @import "components/Terminal";
 @import "components/TerminalCommand";
 @import "components/ThemeSwitcher";
+@import "components/Toolkit_Tabs";
+@import "components/Wysiwyg";
 
 // Utilities
+@import "utilities/animation";
 @import "utilities/arrow";
 @import "utilities/background";
 @import "utilities/info-tooltips";
 @import "utilities/font";
-@import "utilities/rich-text";
 @import "utilities/shadow";
 @import "utilities/text";
 
@@ -109,19 +177,6 @@
 @import "./container";
 @import "./images";
 
-// TODO move Terminal/CodeBlock
-.btn-expand-code {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    color: rgb(156 163 175);
-    background-color: rgb(9, 10, 11);
-}
-.btn-expand-code:hover, .btn-expand-code:active {
-    background-color: rgb(9, 10, 11) !important;
-    color: #fff !important;
-}
 .code-description a {
     text-decoration: underline;
 }

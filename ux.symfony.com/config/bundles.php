@@ -18,7 +18,6 @@ return [
     Doctrine\Bundle\DoctrineBundle\DoctrineBundle::class => ['all' => true],
     Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle::class => ['all' => true],
     Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
-    BabDev\PagerfantaBundle\BabDevPagerfantaBundle::class => ['all' => true],
     Symfony\UX\Autocomplete\AutocompleteBundle::class => ['all' => true],
     Symfony\UX\Notify\NotifyBundle::class => ['all' => true],
     Symfony\UX\React\ReactBundle::class => ['all' => true],
@@ -31,4 +30,9 @@ return [
     Zenstruck\Foundry\ZenstruckFoundryBundle::class => ['dev' => true, 'test' => true],
     Symfony\UX\TogglePassword\TogglePasswordBundle::class => ['all' => true],
     Symfonycasts\SassBundle\SymfonycastsSassBundle::class => ['all' => true],
+    Symfony\UX\Icons\UXIconsBundle::class => ['all' => true],
+    Symfony\UX\Map\UXMapBundle::class => ['all' => true],
+    Symfony\UX\Toolkit\UXToolkitBundle::class => ['all' => true],
+    TalesFromADev\Twig\Extra\Tailwind\Bridge\Symfony\Bundle\TalesFromADevTwigExtraTailwindBundle::class => ['all' => true],
+    Symfonycasts\TailwindBundle\SymfonycastsTailwindBundle::class => ['all' => true],
 ];

@@ -7,22 +7,19 @@
  * file that was distributed with this source code.
  */
 
-'use strict';
-
 import { Application } from '@hotwired/stimulus';
 import { getByTestId } from '@testing-library/dom';
-import { clearDOM, mountDOM } from '@symfony/stimulus-testing';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { clearDOM, mountDOM } from '../../../../test/stimulus-helpers';
 import TurboStreamController from '../src/turbo_stream_controller';
-import { vi } from 'vitest';
 
 const startStimulus = () => {
     const application = Application.start();
     application.register('symfony--ux-turbo--mercure-turbo-stream', TurboStreamController);
 };
 
-/* eslint-disable no-undef */
 describe('TurboStreamController', () => {
-    let container;
+    let container: HTMLElement;
 
     beforeEach(() => {
         global.EventSource = vi.fn(() => ({

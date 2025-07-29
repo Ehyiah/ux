@@ -7,12 +7,12 @@
 
                 <div class="input-group" style="max-width: 200px;">
                     <label class="input-group-text" for="IconSearch-Set">
-                        <twig:Icon name="icon-sets"/>
+                        <twig:ux:icon name="icon-sets"/>
                     </label>
                     <select class="form-control" data-model="set" id="IconSearch-Set">
                         <option value="">All sets</option>
-                        {% for groupName, options in this.getIconSetOptionGroups() %}
-                            <optgroup label="{{ groupName }}">
+                        {% for group_name, options in this.getIconSetOptionGroups() %}
+                            <optgroup label="{{ group_name }}">
                                 {% for value, label in options %}
                                     <option value="{{ value }}">{{ label }}</option>
                                 {% endfor %}
@@ -23,7 +23,7 @@
 
                 <div class="input-group IconSearch__Query">
                     <label class="input-group-text" for="IconSearch-Query">
-                        <twig:Icon name="icon-search"/>
+                        <twig:ux:icon name="icon-search"/>
                     </label>
                     <input
                         autofocus
@@ -41,10 +41,10 @@
                 <div class="d-flex flex-shrink-0 IconSearch__Display">
                     <div class="btn-group" role="group" data-controller="icon-size">
                         <button class="btn" data-action="icon-size#small">
-                            <twig:Icon name="grid-small"/>
+                            <twig:ux:icon name="grid-small"/>
                         </button>
                         <button class="btn" data-action="icon-size#large">
-                            <twig:Icon name="grid-large"/>
+                            <twig:ux:icon name="grid-large"/>
                         </button>
                     </div>
                 </div>
@@ -52,7 +52,7 @@
                 {% if false %}
                     <div data-live-ignore="true">
                         <button class="btn IconBag__Button" data-controller="icon-bag">
-                            <twig:Icon name="icon-folder"/>
+                            <twig:ux:icon name="icon-folder"/>
                             <span class="IconBag__Badge" data-icon-bag-target="count"></span>
                         </button>
                     </div>
@@ -64,7 +64,7 @@
 
     <div id="IconSearchResults" class="mt-5">
         {% if this.icons|length > 0 %}
-            <twig:Icon:IconGrid icons="{{ this.icons }}" id="IconGrid-{{ this.hash }}"  />
+            <twig:Icon:IconGrid icons="{{ this.icons }}" id="IconGrid-{{ this.hash }}" iconSet="{{ this.iconSet ?? null }}" />
         {% elseif this.query %}
             <p class="pt-3 text-center">No icons found matching "{{ query }}".</p>
         {% endif %}

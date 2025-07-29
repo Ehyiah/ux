@@ -26,9 +26,9 @@ needed if you're using AssetMapper):
     $ npm install --force
     $ npm run watch
 
-    # or use yarn
-    $ yarn install --force
-    $ yarn watch
+.. note::
+
+    For more complex installation scenarios, you can install the JavaScript assets through the `@symfony/ux-cropperjs npm package`_
 
 Usage
 -----
@@ -150,6 +150,7 @@ the Symfony framework:
 https://symfony.com/doc/current/contributing/code/bc.html
 
 .. _`Cropper.js`: https://fengyuanchen.github.io/cropperjs/
-.. _`the Symfony UX initiative`: https://symfony.com/ux
+.. _`the Symfony UX initiative`: https://ux.symfony.com/
 .. _`the Cropper.js options`: https://github.com/fengyuanchen/cropperjs/blob/main/README.md#options
 .. _StimulusBundle configured in your app: https://symfony.com/bundles/StimulusBundle/current/index.html
+.. _`@symfony/ux-cropperjs npm package`: https://www.npmjs.com/package/@symfony/ux-cropperjs

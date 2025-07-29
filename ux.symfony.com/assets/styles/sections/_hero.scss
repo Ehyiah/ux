@@ -2,19 +2,20 @@
   padding-top: 5rem;
 }
 
-.rainbow-emphasis {
-  background: linear-gradient(113.84deg, #D65831 0%, #D2D631 36.52%, #31D673 71.83%, #315FD6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-style: normal;
-}
-
 .hero-background {
   padding-block-start: 4rem;
 }
 
 .hero-sub-text {
-  width: 35%;
+  width: 50%;
+  text-wrap: balance;
+}
+.hero-sub-text a {
+  border-bottom: 1.5px solid #ffff;
+  text-decoration: none;
+}
+.hero-sub-text a:hover {
+  color: inherit;
 }
 
 @media (max-width: 1114px) {

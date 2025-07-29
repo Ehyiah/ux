@@ -1,5 +1,71 @@
 # CHANGELOG
 
+## 2.28.0
+
+-   Add new modifiers for input validations, useful to prevent uneccessary HTTP requests:
+    - `min_length` and `max_length`: validate length from textual input elements
+    - `min_value` and `max_value`: validate value from numeral input elements
+
+-   Add new `mapPath` options (default `false`) to `UrlMapping` of a `LiveProp`
+    to allow the prop to be mapped to the path instead of the query in the url.
+
+```twig
+<!-- Do not trigger model update until 3 characters are typed -->
+<input data-model="min_length(3)|username" type="text" value="" />
+
+<!-- Only trigger updates when value number is between 10 and 100 -->
+<input data-model="min_value(10)|max_value(100)|quantity" type="number" value="20" />
+```
+
+## 2.27.0
+
+-  Add events assertions in `InteractsWithLiveComponents`:
+```php
+$testComponent = $this->createLiveComponent(name: 'MyComponent');
+
+$renderedComponent = $testComponent->render();
+
+// Assert that the component did emit an event named 'event'
+$this->assertComponentEmitEvent($render, 'event')
+    // optionally, you can assert that the event was emitted with specific data...
+    ->withData(['arg1' => 'foo', 'arg2' => 'bar'])
+    // ... or only with a subset of data
+    ->withDataSubset(['arg1' => 'foo']);
+
+// Assert that the component did not emit an event named 'another-event'
+$this->assertComponentNotEmitEvent($render, 'another-event');
+```
+
+## 2.26.0
+
+-   `LiveProp`: Pass the property name as second parameter of the `modifier` callable
+-   Add compatibility layer to fix deprecation with `Symfony\Component\PropertyInfo\PropertyInfoExtractor::getTypes()`.
+    If you use PHP 8.2 or higher, we recommend you to update dependency `symfony/property-info` to at least 7.1.0
+
+## 2.25.0
+
+-   Add support for [Symfony UID](https://symfony.com/doc/current/components/uid.html) hydration/dehydration
+-   `ComponentWithFormTrait` now correctly checks for a `TranslatableInterface` placeholder for `<select>` elements
+-   Fix `LiveComponentHydrator::hydrateValue()` to hydrate null values
+
+## 2.23.0
+
+-   Allow configuring the secret used to compute fingerprints and checksums.
+-   Prevent `__component` property to be serialized when called `JSON.stringify()`
+
+## 2.22.0
+
+-   Remove CSRF tokens - rely on same-origin/CORS instead
+
+## 2.19.0
+
+-   Add `submitForm()` to `TestLiveComponent`.
+-   Add `live_action` Twig function
+
+## 2.18.0
+
+-   Add parameter to `TestLiveComponent::call()` to add files to the request
+
 ## 2.17.0
 
 -   Add `modifier` option in `LiveProp` so options can be modified at runtime.

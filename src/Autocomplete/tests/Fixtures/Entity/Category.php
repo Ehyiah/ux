@@ -32,9 +32,13 @@ class Category
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Product::class)]
     private Collection $products;
 
+    #[ORM\ManyToMany(targetEntity: CategoryTag::class, mappedBy: 'categories')]
+    private Collection $tags;
+
     public function __construct()
     {
         $this->products = new ArrayCollection();
+        $this->tags = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -92,6 +96,31 @@ class Category
                 $product->setCategory(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CategoryTag>
+     */
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(CategoryTag $tag): self
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags[] = $tag;
+            $tag->addCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTag(CategoryTag $tag): self
+    {
+        $this->tags->removeElement($tag);
 
         return $this;
     }

@@ -7,10 +7,10 @@
  * file that was distributed with this source code.
  */
 
-'use strict';
-
-import {registerSvelteControllerComponents} from '../src/register_controller';
+import { describe, expect, it } from 'vitest';
+import { registerSvelteControllerComponents } from '../src/register_controller';
 import MyComponent from './fixtures/MyComponent.svelte';
+
 import RequireContext = __WebpackModuleApi.RequireContext;
 
 const createFakeFixturesContext = (): RequireContext => {

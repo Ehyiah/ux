@@ -1,4 +1,4 @@
-{% extends 'packageBase.html.twig' %}
+{% extends 'ux_packages/package.html.twig' %}
 
 {% block package_header %}
     {% component PackageHeader with {
@@ -13,8 +13,8 @@
             The speed of a single-page web app without writing any JavaScript,
             courtesy of <a class="font-white text-underline" href="https://turbo.hotwired.dev/" rel="external noopener noreferrer">Turbo</a>
 
-            <div style="position: absolute;  bottom: 4rem;  left: 50%;  transform: translateX(-50%);">
-                {{ include('ux_packages/turbo/_chatMessageCount.html.twig', {messageCount: this.messageCount}) }}
+            <div style="position: absolute;  bottom: 4rem;  left: 50%;  transform: translateX(-50%);color: white;">
+                {{ include('ux_packages/turbo/_chat_message_count.html.twig', {messageCount: this.messageCount}) }}
             </div>
         {% endblock %}
 
@@ -22,7 +22,7 @@
 {% endblock %}
 
 {% block package_content %}
-    <div class="container-fluid container-xxl px-4 pt-4 px-md-5 pt-md-5">
+    <div class="container-fluid container-xxl px-4 pt-4 px-md-5">
 
         <section class="row mb-5">
             <div class="col-12 col-md-6 order-md-2">
@@ -33,7 +33,7 @@
                     <div class="alert alert-secondary d-flex justify-content-start col-12 mt-5">
                         <img width="18px" height="18px" src="{{ asset('images/info-icon.png') }}" alt="Icon to indication information">
                         <p class="info-tooltips ms-2 mb-0">
-                            <twig:Icon name="arrow-left"/>
+                            <twig:ux:icon name="arrow-left"/>
                             Click any links on this site or submit this form.
                         Zero full page refreshes!</p>
                     </div>
@@ -47,7 +47,7 @@
                     {% block content %}
                         {% if name and animal %}
                             <div>Say hello to {{ name }} the brave & noble {{ animal }}!</div>
-                            <a href="{{ path('app_turbo') }}"><twig:Icon name="arrow-left" /> Back</a>
+                            <a href="{{ path('app_turbo') }}"><twig:ux:icon name="arrow-left" /> Back</a>
                         {% else %}
                             <div class="mb-3">Build yourself a new pet</div>
                             <form method="POST" novalidate>
@@ -83,7 +83,7 @@
                         The frame displays just part of the full page from
                         <a href="{{ path('app_turbo_todo_list') }}">{{ url('app_turbo_todo_list') }}</a>.
                         All link clicks and form submits stay *inside* the frame.
-                        <twig:Icon name="arrow-right" /></p>
+                        <twig:ux:icon name="arrow-right" /></p>
                     </div>
                 </div>
             </div>
@@ -113,10 +113,10 @@
                     </div>
                     <div class="alert alert-secondary d-flex justify-content-start col-12 mt-5">
                         <img width="18px" height="18px" src="{{ asset('images/info-icon.png') }}" alt="Icon to indication information">
-                        <p class="info-tooltips ms-2 mb-0"><twig:Icon name="arrow-left" />
+                        <p class="info-tooltips ms-2 mb-0"><twig:ux:icon name="arrow-left" />
                         Chat with someone else viewing this page (or open a
                         2nd browser tab to talk to yourself)! Submitting also
-                        updates the <a href="#message-count-header"><twig:Icon name="comment" /> icon</a> in the header.</p>
+                        updates the <a href="#message-count-header"><twig:ux:icon name="comment" /> icon</a> in the header.</p>
                     </div>
                 </div>
             </div>
@@ -128,14 +128,14 @@
                     {% block content %}
                         <div style="height: 150px; overflow: auto;">
                             <ul class="list-unstyled" id="chat-box">
-                                {{ include('ux_packages/turbo/_chatList.html.twig') }}
+                                {{ include('ux_packages/turbo/_chat_list.html.twig') }}
                             </ul>
                         </div>
                     {% endblock %}
                     {% block content_secondary %}
-                    <div class="demo-container-inner-secondary p-4">
+                    <div class="DemoContainer-inner p-4">
                         <form id="chat-form" action="{{ path('app_turbo_chat') }}" method="POST">
-                            {{ include('ux_packages/turbo/_chatForm.html.twig') }}
+                            {{ include('ux_packages/turbo/_chat_form.html.twig') }}
                         </form>
                     </div>
                     {% endblock %}

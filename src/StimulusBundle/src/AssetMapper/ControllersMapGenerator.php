@@ -70,6 +70,11 @@ class ControllersMapGenerator
 
         $controllersMap = [];
         foreach ($finder as $file) {
+            // Skip .ts controller if .js version is available
+            if ('ts' === $file->getExtension() && file_exists(substr($file->getRealPath(), 0, -2).'js')) {
+                continue;
+            }
+
             $name = $file->getRelativePathname();
             // use regex to extract 'controller'-postfix including extension
             preg_match(self::FILENAME_REGEX, $name, $matches);
@@ -77,7 +82,11 @@ class ControllersMapGenerator
             $name = str_replace(['_', '/', '\\'], ['-', '--', '--'], $name);
 
             $asset = $this->assetMapper->getAssetFromSourcePath($file->getRealPath());
-            $content = $asset->content ?: file_get_contents($asset->sourcePath);
+            if (!$asset) {
+                throw new \RuntimeException(\sprintf('Could not find an asset mapper path that points to the "%s" controller.', $name));
+            }
+
+            $content = file_get_contents($asset->sourcePath);
             $isLazy = preg_match('/\/\*\s*stimulusFetch:\s*\'lazy\'\s*\*\//i', $content);
 
             $controllersMap[$name] = new MappedControllerAsset($asset, $isLazy);
@@ -108,7 +117,7 @@ class ControllersMapGenerator
                 $packageControllerConfig = $packageMetadata->symfonyConfig['controllers'][$controllerName] ?? null;
 
                 if (null === $packageControllerConfig) {
-                    throw new \RuntimeException(sprintf('Controller "%s" does not exist in the "%s" package.', $controllerReference, $packageMetadata->packageName));
+                    throw new \RuntimeException(\sprintf('Controller "%s" does not exist in the "%s" package.', $controllerReference, $packageMetadata->packageName));
                 }
 
                 if (!$localControllerConfig['enabled']) {
@@ -132,7 +141,7 @@ class ControllersMapGenerator
 
                 $asset = $this->assetMapper->getAssetFromSourcePath($controllerMainPath);
                 if (!$asset) {
-                    throw new \RuntimeException(sprintf('Could not find an asset mapper path that points to the "%s" controller in package "%s", defined in controllers.json.', $controllerName, $packageMetadata->packageName));
+                    throw new \RuntimeException(\sprintf('Could not find an asset mapper path that points to the "%s" controller in package "%s", defined in controllers.json.', $controllerName, $packageMetadata->packageName));
                 }
 
                 $autoImports = $this->collectAutoImports($localControllerConfig['autoimport'] ?? [], $packageMetadata);
@@ -154,7 +163,7 @@ class ControllersMapGenerator
             return [];
         }
         if (null === $this->autoImportLocator) {
-            throw new \InvalidArgumentException(sprintf('The "autoImportLocator" argument to "%s" is required when using AssetMapper 6.4', self::class));
+            throw new \InvalidArgumentException(\sprintf('The "autoImportLocator" argument to "%s" is required when using AssetMapper 6.4', self::class));
         }
 
         $autoImportItems = [];

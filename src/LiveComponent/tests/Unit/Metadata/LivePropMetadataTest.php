@@ -29,7 +29,7 @@ class LivePropMetadataTest extends TestCase
         $component
             ->expects($this->once())
             ->method('modifyProp')
-            ->with($liveProp)
+            ->with($liveProp, 'propWithModifier')
             ->willReturn($liveProp->withFieldName('customField'));
 
         $livePropMetadata = $livePropMetadata->withModifier($component);
@@ -63,7 +63,7 @@ class LivePropMetadataTest extends TestCase
             ->willReturn(false);
 
         $this->expectException(\LogicException::class);
-        $this->expectExceptionMessageMatches(sprintf('/Method ".*::modifyProp\(\)" should return an instance of "%s" \(given: "bool"\)\./', preg_quote(LiveProp::class)));
+        $this->expectExceptionMessageMatches(\sprintf('/Method ".*::modifyProp\(\)" should return an instance of "%s" \(given: "bool"\)\./', preg_quote(LiveProp::class)));
         $livePropMetadata->withModifier($component);
     }
 }

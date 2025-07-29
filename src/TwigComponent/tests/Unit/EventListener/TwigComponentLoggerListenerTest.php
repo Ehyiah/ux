@@ -14,13 +14,11 @@ namespace Symfony\UX\TwigComponent\Tests\Unit\EventListener;
 use PHPUnit\Framework\TestCase;
 use Symfony\UX\TwigComponent\ComponentAttributes;
 use Symfony\UX\TwigComponent\ComponentMetadata;
-use Symfony\UX\TwigComponent\Event\PostMountEvent;
 use Symfony\UX\TwigComponent\Event\PostRenderEvent;
-use Symfony\UX\TwigComponent\Event\PreCreateForRenderEvent;
-use Symfony\UX\TwigComponent\Event\PreMountEvent;
 use Symfony\UX\TwigComponent\Event\PreRenderEvent;
 use Symfony\UX\TwigComponent\EventListener\TwigComponentLoggerListener;
 use Symfony\UX\TwigComponent\MountedComponent;
+use Twig\Runtime\EscaperRuntime;
 
 /**
  * @author Simon André <smn.andre@gmail.com>
@@ -32,31 +30,21 @@ class TwigComponentLoggerListenerTest extends TestCase
         $logger = new TwigComponentLoggerListener();
         $this->assertSame([], $logger->getEvents());
 
-        $eventA = new PreCreateForRenderEvent('a');
-        $logger->onPreCreateForRender($eventA);
+        $mounted = new MountedComponent('foo', new \stdClass(), new ComponentAttributes([], new EscaperRuntime()));
+        $eventA = new PreRenderEvent($mounted, new ComponentMetadata(['template' => 'bar']), []);
+        $logger->onPreRender($eventA);
+        $eventB = new PostRenderEvent($mounted);
+        $logger->onPostRender($eventB);
 
-        $eventB = new PreCreateForRenderEvent('b');
-        $logger->onPreCreateForRender($eventB);
-
-        $eventC = new PreMountEvent(new \stdClass(), [], new ComponentMetadata([]));
-        $logger->onPreMount($eventC);
-        $eventD = new PostMountEvent(new \stdClass(), [], new ComponentMetadata([]));
-        $logger->onPostMount($eventD);
-
-        $mounted = new MountedComponent('foo', new \stdClass(), new ComponentAttributes([]));
-        $eventE = new PreRenderEvent($mounted, new ComponentMetadata(['template' => 'bar']), []);
-        $logger->onPreRender($eventE);
-        $eventF = new PostRenderEvent($mounted);
-        $logger->onPostRender($eventF);
-
-        $this->assertSame([$eventA, $eventB, $eventC, $eventD, $eventE, $eventF], array_column($logger->getEvents(), 0));
+        $this->assertSame([$eventA, $eventB], array_column($logger->getEvents(), 0));
     }
 
     public function testLoggerReset(): void
     {
         $logger = new TwigComponentLoggerListener();
+        $escaper = new EscaperRuntime();
 
-        $logger->onPreCreateForRender(new PreCreateForRenderEvent('foo'));
+        $logger->onPreRender(new PreRenderEvent(new MountedComponent('foo', new \stdClass(), new ComponentAttributes([], $escaper)), new ComponentMetadata(['template' => 'bar']), []));
         $this->assertNotSame([], $logger->getEvents());
 
         $logger->reset();

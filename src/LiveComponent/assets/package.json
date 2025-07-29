@@ -1,13 +1,31 @@
 {
     "name": "@symfony/ux-live-component",
     "description": "Live Component: bring server-side re-rendering & model binding to any element.",
+    "license": "MIT",
+    "version": "2.28.1",
+    "keywords": [
+        "symfony-ux",
+        "twig",
+        "components"
+    ],
+    "homepage": "https://ux.symfony.com/live-component",
+    "repository": "https://github.com/symfony/ux-live-component",
+    "type": "module",
+    "files": [
+        "dist"
+    ],
     "main": "dist/live_controller.js",
     "types": "dist/live_controller.d.ts",
-    "version": "1.0.0",
     "config": {
-        "css_source": "styles/live.css"
+        "css_source": "src/live.css"
     },
-    "license": "MIT",
+    "scripts": {
+        "build": "tsx ../../../bin/build_package.ts .",
+        "watch": "tsx ../../../bin/build_package.ts . --watch",
+        "test": "../../../bin/test_package.sh .",
+        "check": "biome check",
+        "ci": "biome ci"
+    },
     "symfony": {
         "controllers": {
             "live": {
@@ -26,17 +44,21 @@
             "@symfony/ux-live-component": "path:%PACKAGE%/dist/live_controller.js"
         }
     },
-    "dependencies": {
-        "idiomorph": "^0.3.0"
-    },
     "peerDependencies": {
         "@hotwired/stimulus": "^3.0.0"
     },
     "devDependencies": {
         "@hotwired/stimulus": "^3.0.0",
         "@testing-library/dom": "^7.31.0",
+        "@testing-library/jest-dom": "^6.6.3",
         "@testing-library/user-event": "^13.1.9",
         "@types/node-fetch": "^2.6.2",
-        "node-fetch": "^2.6.1"
+        "idiomorph": "^0.3.0",
+        "jsdom": "^26.1.0",
+        "node-fetch": "^2.6.1",
+        "tslib": "^2.8.1",
+        "tsx": "^4.20.3",
+        "typescript": "^5.8.3",
+        "vitest": "^3.2.4"
     }
 }

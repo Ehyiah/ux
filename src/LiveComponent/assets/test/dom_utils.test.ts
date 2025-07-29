@@ -1,19 +1,21 @@
-import {
-    getValueFromElement,
-    cloneHTMLElement,
-    htmlToElement,
-    getModelDirectiveFromElement,
-    elementBelongsToThisComponent,
-    setValueOnElement
-} from '../src/dom_utils';
-import ValueStore from '../src/Component/ValueStore';
-import Component from '../src/Component';
+import { describe, expect, it } from 'vitest';
 import Backend from '../src/Backend/Backend';
+import Component from '../src/Component';
+import ValueStore from '../src/Component/ValueStore';
+import {
+    cloneHTMLElement,
+    elementBelongsToThisComponent,
+    getModelDirectiveFromElement,
+    getValueFromElement,
+    htmlToElement,
+    isNumericalInputElement,
+    isTextareaElement,
+    isTextualInputElement,
+    setValueOnElement,
+} from '../src/dom_utils';
 import { noopElementDriver } from './tools';
 
-const createStore = function(props: any = {}): ValueStore {
-    return new ValueStore(props);
-}
+const createStore = (props: any = {}): ValueStore => new ValueStore(props);
 
 describe('getValueFromElement', () => {
     it('Correctly adds data from valued checked checkbox', () => {
@@ -23,17 +25,13 @@ describe('getValueFromElement', () => {
         input.dataset.model = 'foo';
         input.value = 'the_checkbox_value';
 
-        expect(getValueFromElement(input, createStore()))
-            .toEqual('the_checkbox_value');
+        expect(getValueFromElement(input, createStore())).toEqual('the_checkbox_value');
 
-        expect(getValueFromElement(input, createStore({ foo: [] })))
-            .toEqual(['the_checkbox_value']);
+        expect(getValueFromElement(input, createStore({ foo: [] }))).toEqual(['the_checkbox_value']);
 
-        expect(getValueFromElement(input, createStore({ foo: ['bar'] })))
-            .toEqual(['bar', 'the_checkbox_value']);
+        expect(getValueFromElement(input, createStore({ foo: ['bar'] }))).toEqual(['bar', 'the_checkbox_value']);
 
-        expect(getValueFromElement(input, createStore({ foo: {'1': 'bar'} })))
-            .toEqual(['bar', 'the_checkbox_value']);
+        expect(getValueFromElement(input, createStore({ foo: { '1': 'bar' } }))).toEqual(['bar', 'the_checkbox_value']);
     });
 
     it('Correctly removes data from valued unchecked checkbox', () => {
@@ -43,17 +41,14 @@ describe('getValueFromElement', () => {
         input.dataset.model = 'foo';
         input.value = 'the_checkbox_value';
 
-        expect(getValueFromElement(input, createStore()))
-            .toEqual(null);
-        expect(getValueFromElement(input, createStore({ foo: ['the_checkbox_value'] })))
-            .toEqual([]);
+        expect(getValueFromElement(input, createStore())).toEqual(null);
+        expect(getValueFromElement(input, createStore({ foo: ['the_checkbox_value'] }))).toEqual([]);
         // unchecked value already was not in store
-        expect(getValueFromElement(input, createStore({ foo: ['bar'] })))
-            .toEqual(['bar']);
-        expect(getValueFromElement(input, createStore({ foo: ['bar', 'the_checkbox_value'] })))
-            .toEqual(['bar']);
-        expect(getValueFromElement(input, createStore({ foo: {'1': 'bar', '2': 'the_checkbox_value'} })))
-            .toEqual(['bar']);
+        expect(getValueFromElement(input, createStore({ foo: ['bar'] }))).toEqual(['bar']);
+        expect(getValueFromElement(input, createStore({ foo: ['bar', 'the_checkbox_value'] }))).toEqual(['bar']);
+        expect(getValueFromElement(input, createStore({ foo: { '1': 'bar', '2': 'the_checkbox_value' } }))).toEqual([
+            'bar',
+        ]);
     });
 
     it('Correctly handles boolean checkbox', () => {
@@ -62,13 +57,11 @@ describe('getValueFromElement', () => {
         input.checked = true;
         input.dataset.model = 'foo';
 
-        expect(getValueFromElement(input, createStore()))
-            .toEqual(true);
+        expect(getValueFromElement(input, createStore())).toEqual(true);
 
         input.checked = false;
 
-        expect(getValueFromElement(input, createStore()))
-            .toEqual(false);
+        expect(getValueFromElement(input, createStore())).toEqual(false);
     });
 
     it('Correctly returns for non-model checkboxes', () => {
@@ -77,12 +70,10 @@ describe('getValueFromElement', () => {
         input.checked = true;
         input.value = 'the_checkbox_value';
 
-        expect(getValueFromElement(input, createStore()))
-            .toEqual('the_checkbox_value');
+        expect(getValueFromElement(input, createStore())).toEqual('the_checkbox_value');
 
         input.checked = false;
-        expect(getValueFromElement(input, createStore()))
-            .toEqual(null);
+        expect(getValueFromElement(input, createStore())).toEqual(null);
     });
 
     it('Correctly sets data from select multiple', () => {
@@ -97,32 +88,27 @@ describe('getValueFromElement', () => {
         select.add(barOption);
 
         // nothing selected
-        expect(getValueFromElement(select, createStore()))
-            .toEqual([]);
+        expect(getValueFromElement(select, createStore())).toEqual([]);
 
         fooOption.selected = true;
-        expect(getValueFromElement(select, createStore()))
-            .toEqual(['foo']);
+        expect(getValueFromElement(select, createStore())).toEqual(['foo']);
 
         barOption.selected = true;
-        expect(getValueFromElement(select, createStore()))
-            .toEqual(['foo', 'bar']);
-    })
+        expect(getValueFromElement(select, createStore())).toEqual(['foo', 'bar']);
+    });
 
     it('Grabs data-value attribute for other elements', () => {
         const div = document.createElement('div');
         div.dataset.value = 'the_value';
 
-        expect(getValueFromElement(div, createStore()))
-            .toEqual('the_value');
+        expect(getValueFromElement(div, createStore())).toEqual('the_value');
     });
 
     it('Grabs value attribute for other elements', () => {
         const div = document.createElement('div');
         div.setAttribute('value', 'the_value_from_attribute');
 
-        expect(getValueFromElement(div, createStore()))
-            .toEqual('the_value_from_attribute');
+        expect(getValueFromElement(div, createStore())).toEqual('the_value_from_attribute');
     });
 });
 
@@ -209,7 +195,7 @@ describe('setValueOnElement', () => {
         setValueOnElement(select, ['foo']);
         expect(fooOption.selected).toBeTruthy();
         expect(barOption.selected).toBeFalsy();
-    })
+    });
 
     it('Sets value on other elements', () => {
         const input = document.createElement('input');
@@ -260,7 +246,9 @@ describe('getModelDirectiveFromInput', () => {
     it('throws error if no data-model found', () => {
         const element = htmlToElement('<input>');
 
-        expect(() => { getModelDirectiveFromElement(element) }).toThrow('Cannot determine the model name');
+        expect(() => {
+            getModelDirectiveFromElement(element);
+        }).toThrow('Cannot determine the model name');
     });
 });
 
@@ -273,7 +261,7 @@ describe('elementBelongsToThisComponent', () => {
             [],
             null,
             new Backend(''),
-            new noopElementDriver(),
+            new noopElementDriver()
         );
         component.connect();
 
@@ -287,9 +275,17 @@ describe('elementBelongsToThisComponent', () => {
         expect(elementBelongsToThisComponent(targetElement, component)).toBeFalsy();
     });
 
-    it('returns true if element lives inside of controller', () => {
-        const targetElement = htmlToElement('<input name="user[firstName]">');
+    it('returns true if element lives inside of a div', () => {
+        const targetElement = htmlToElement('<input name="user[firstName]"/>');
         const component = createComponent('<div></div>');
+        component.element.appendChild(targetElement);
+
+        expect(elementBelongsToThisComponent(targetElement, component)).toBeFalsy();
+    });
+
+    it('returns true if element lives inside of live controller', () => {
+        const targetElement = htmlToElement('<input name="user[firstName]"/>');
+        const component = createComponent('<div data-controller="live" data-live-name-value="parentLabel"></div>');
         component.element.appendChild(targetElement);
 
         expect(elementBelongsToThisComponent(targetElement, component)).toBeTruthy();
@@ -303,7 +299,6 @@ describe('elementBelongsToThisComponent', () => {
         const component = createComponent('<div class="parent"></div>');
         component.element.appendChild(childComponent.element);
 
-        //expect(elementBelongsToThisComponent(targetElement, childComponent)).toBeTruthy();
         expect(elementBelongsToThisComponent(targetElement, component)).toBeFalsy();
     });
 
@@ -331,5 +326,94 @@ describe('cloneHTMLElement', () => {
         const clone = cloneHTMLElement(element);
 
         expect(clone.outerHTML).toEqual('<div class="foo"></div>');
+    });
+});
+
+describe('isTextualInputElement', () => {
+    describe.each([
+        ['text', true],
+        ['email', true],
+        ['password', true],
+        ['search', true],
+        ['tel', true],
+        ['url', true],
+        ['number', false],
+        ['range', false],
+        ['file', false],
+        ['date', false],
+        ['checkbox', false],
+        ['radio', false],
+        ['submit', false],
+        ['reset', false],
+        ['color', false],
+        ['datetime-local', false],
+        ['hidden', false],
+        ['image', false],
+        ['month', false],
+        ['time', false],
+        ['week', false],
+    ])('input[type="%s"] should return %s', (type, expected) => {
+        it(`returns ${expected}`, () => {
+            const input = document.createElement('input');
+            if (typeof type === 'string') {
+                input.type = type;
+            }
+            expect(isTextualInputElement(input)).toBe(expected);
+        });
+    });
+
+    it('returns false for <textarea>', () => {
+        const textarea = document.createElement('textarea');
+        expect(isTextualInputElement(textarea)).toBe(false);
+    });
+
+    it('returns false for non-input elements', () => {
+        const div = document.createElement('div');
+        expect(isTextualInputElement(div)).toBe(false);
+    });
+});
+
+describe('isTextareaElement', () => {
+    it('returns true for <textarea>', () => {
+        const textarea = document.createElement('textarea');
+        expect(isTextareaElement(textarea)).toBe(true);
+    });
+
+    it('returns false for <input>', () => {
+        const input = document.createElement('input');
+        input.type = 'text';
+        expect(isTextareaElement(input)).toBe(false);
+    });
+
+    it('returns false for other elements', () => {
+        const span = document.createElement('span');
+        expect(isTextareaElement(span)).toBe(false);
+    });
+});
+
+describe('isNumericalInputElement', () => {
+    describe.each([
+        ['number', true],
+        ['range', true],
+        ['text', false],
+        ['email', false],
+        ['checkbox', false],
+        ['submit', false],
+    ])('input[type="%s"] should return %s', (type, expected) => {
+        it(`returns ${expected}`, () => {
+            const input = document.createElement('input');
+            if (typeof type === 'string') {
+                input.type = type;
+            }
+            expect(isNumericalInputElement(input)).toBe(expected);
+        });
+    });
+
+    it('returns false for non-input elements', () => {
+        const div = document.createElement('div');
+        expect(isNumericalInputElement(div)).toBe(false);
+
+        const textarea = document.createElement('textarea');
+        expect(isNumericalInputElement(textarea)).toBe(false);
     });
 });

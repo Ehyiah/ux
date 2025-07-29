@@ -7,11 +7,10 @@
  * file that was distributed with this source code.
  */
 
-'use strict';
-
 import { Application, Controller } from '@hotwired/stimulus';
 import { getByTestId, waitFor } from '@testing-library/dom';
-import { clearDOM, mountDOM } from '@symfony/stimulus-testing';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { clearDOM, mountDOM } from '../../../../test/stimulus-helpers';
 import TypedController from '../src/controller';
 
 // Controller used to check the actual controller was properly booted
@@ -33,7 +32,7 @@ const startStimulus = () => {
 };
 
 describe('TypedController', () => {
-    let container;
+    let container: HTMLElement;
 
     beforeEach(() => {
         container = mountDOM(`
@@ -41,7 +40,7 @@ describe('TypedController', () => {
                 <head>
                     <title>Symfony UX</title>
                 </head>
-                <body>                    
+                <body>
                     <div>
                         I created this UX component because <span
                           data-testid="typed"

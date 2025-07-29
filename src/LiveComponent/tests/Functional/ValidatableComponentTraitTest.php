@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * This file is part of the Symfony package.
  *
@@ -11,7 +9,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Symfony\UX\LiveComponent\Tests\Functional\Form;
+namespace Symfony\UX\LiveComponent\Tests\Functional;
 
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\UX\LiveComponent\Tests\LiveComponentTestHelper;

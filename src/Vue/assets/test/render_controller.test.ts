@@ -7,11 +7,10 @@
  * file that was distributed with this source code.
  */
 
-'use strict';
-
 import { Application, Controller } from '@hotwired/stimulus';
 import { getByTestId, waitFor } from '@testing-library/dom';
-import { clearDOM, mountDOM } from '@symfony/stimulus-testing';
+import { describe, expect, it } from 'vitest';
+import { clearDOM, mountDOM } from '../../../../test/stimulus-helpers';
 import VueController from '../src/render_controller';
 
 // Controller used to check the actual controller was properly booted
@@ -34,8 +33,8 @@ const startStimulus = () => {
 };
 
 const Hello = {
-    template: '<h1>Hello {{ name ?? \'world\' }}</h1>',
-    props: ['name']
+    template: "<h1>Hello {{ name ?? 'world' }}</h1>",
+    props: ['name'],
 };
 
 window.resolveVueComponent = () => {

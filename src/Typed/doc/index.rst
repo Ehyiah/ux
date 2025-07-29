@@ -1,6 +1,13 @@
 Symfony UX Typed
 ================
 
+.. warning::
+
+    **Deprecated: This package has been deprecated in 2.x and will be removed in the next major version.**
+
+    To keep the same functionality in your Symfony application, please follow the migration steps
+    from the `Symfony UX Typed README.md`_.
+
 Symfony UX Typed is a Symfony bundle integrating `Typed`_ in
 Symfony applications. It is part of `the Symfony UX initiative`_.
 
@@ -31,9 +38,9 @@ needed if you're using AssetMapper):
     $ npm install --force
     $ npm run watch
 
-    # or use yarn
-    $ yarn install --force
-    $ yarn watch
+.. note::
+
+    For more complex installation scenarios, you can install the JavaScript assets through the `@symfony/ux-typed npm package`_
 
 Usage
 -----
@@ -152,6 +159,8 @@ the Symfony framework:
 https://symfony.com/doc/current/contributing/code/bc.html
 
 .. _`Typed`: https://github.com/mattboldt/typed.js/blob/master/README.md
-.. _`the Symfony UX initiative`: https://symfony.com/ux
+.. _`the Symfony UX initiative`: https://ux.symfony.com/
 .. _`typed library`: https://github.com/mattboldt/typed.js/blob/master/README.md
 .. _StimulusBundle configured in your app: https://symfony.com/bundles/StimulusBundle/current/index.html
+.. _`@symfony/ux-typed npm package`: https://www.npmjs.com/package/@symfony/ux-typed
+.. _`Symfony UX Typed README.md`: https://github.com/symfony/ux/tree/2.x/src/Typed

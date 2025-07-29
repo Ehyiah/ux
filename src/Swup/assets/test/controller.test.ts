@@ -7,11 +7,10 @@
  * file that was distributed with this source code.
  */
 
-'use strict';
-
 import { Application, Controller } from '@hotwired/stimulus';
 import { getByTestId, waitFor } from '@testing-library/dom';
-import { clearDOM, mountDOM } from '@symfony/stimulus-testing';
+import { afterEach, describe, expect, it } from 'vitest';
+import { clearDOM, mountDOM } from '../../../../test/stimulus-helpers';
 import SwupController from '../src/controller';
 
 let actualSwupOptions: any = null;
@@ -48,7 +47,7 @@ describe('SwupController', () => {
                     <title>Symfony UX</title>
                 </head>
                 <body>
-                    <div 
+                    <div
                         data-testid="body"
                         data-controller="check swup"
                         data-swup-containers-value="[&quot;#swup&quot;, &quot;#nav&quot;]"
@@ -84,7 +83,7 @@ describe('SwupController', () => {
                     <title>Symfony UX</title>
                 </head>
                 <body>
-                    <div 
+                    <div
                         data-testid="body"
                         data-controller="check swup"
                         data-swup-link-selector-value="a"
@@ -116,7 +115,7 @@ describe('SwupController', () => {
                     <title>Symfony UX</title>
                 </head>
                 <body>
-                    <div 
+                    <div
                         data-testid="body"
                         data-controller="check swup"
                         data-swup-main-element-value="#main"
@@ -150,7 +149,7 @@ describe('SwupController', () => {
                     <title>Symfony UX</title>
                 </head>
                 <body>
-                    <div 
+                    <div
                         data-testid="body"
                         data-controller="check swup"
                         data-swup-containers-value="[&quot;#swup&quot;, &quot;#nav&quot;]"
@@ -183,7 +182,7 @@ describe('SwupController', () => {
                     <title>Symfony UX</title>
                 </head>
                 <body>
-                    <div 
+                    <div
                         data-testid="body"
                         data-controller="check swup"
                         data-swup-main-element-value="#main"

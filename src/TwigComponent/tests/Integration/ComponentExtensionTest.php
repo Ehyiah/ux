@@ -11,6 +11,7 @@
 
 namespace Symfony\UX\TwigComponent\Tests\Integration;
 
+use Symfony\Bridge\PhpUnit\ExpectDeprecationTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\UX\TwigComponent\Tests\Fixtures\User;
 use Twig\Environment;
@@ -21,6 +22,8 @@ use Twig\Error\RuntimeError;
  */
 final class ComponentExtensionTest extends KernelTestCase
 {
+    use ExpectDeprecationTrait;
+
     public function testCanRenderComponent(): void
     {
         $output = $this->renderComponent('component_a', [
@@ -204,6 +207,13 @@ final class ComponentExtensionTest extends KernelTestCase
         $this->assertStringContainsString('<p>foo</p>', $output);
     }
 
+    public function testComponentPropsOverwriteContextValueWithInputProp(): void
+    {
+        $output = self::getContainer()->get(Environment::class)->render('anonymous_component_with_input_prop_with_same_name_in_context.html.twig');
+
+        $this->assertStringContainsString('<p>bar</p>', $output);
+    }
+
     public function testComponentPropsWithTrailingComma(): void
     {
         $output = self::getContainer()->get(Environment::class)->render('anonymous_component_props_trailing_comma.html.twig');
@@ -257,8 +267,13 @@ final class ComponentExtensionTest extends KernelTestCase
         ];
     }
 
+    /**
+     * @group legacy
+     */
     public function testComponentWithClassMerge(): void
     {
+        $this->expectDeprecation('Since symfony/ux-twig-component 2.20: Twig Function "cva" is deprecated; use "html_cva" from the "twig/html-extra" package (available since version 3.12) instead.');
+
         $output = self::getContainer()->get(Environment::class)->render('class_merge.html.twig');
 
         $this->assertStringContainsString('class="alert alert-red alert-lg font-semibold rounded-md dark:bg-gray-600 flex p-4"', $output);
@@ -268,7 +283,8 @@ final class ComponentExtensionTest extends KernelTestCase
     {
         $output = $this->renderComponent('NestedAttributes');
 
-        $this->assertSame(<<<HTML
+        $this->assertSame(
+            <<<HTML
             <main>
                 <div>
                     <span>
@@ -287,7 +303,8 @@ final class ComponentExtensionTest extends KernelTestCase
             'title:span:class' => 'baz',
         ]);
 
-        $this->assertSame(<<<HTML
+        $this->assertSame(
+            <<<HTML
             <main class="foo">
                 <div class="bar">
                     <span class="baz">
@@ -301,6 +318,58 @@ final class ComponentExtensionTest extends KernelTestCase
         );
     }
 
+    /**
+     * @dataProvider providePrefixedAttributesCases
+     */
+    public function testRenderPrefixedAttributes(string $attributes, bool $expectContains): void
+    {
+        /** @var Environment $twig */
+        $twig = self::getContainer()->get(Environment::class);
+        $template = $twig->createTemplate(\sprintf('<twig:PrefixedAttributes %s/>', $attributes));
+
+        if ($expectContains) {
+            self::assertStringContainsString($attributes, trim($template->render()));
+
+            return;
+        }
+
+        self::assertStringNotContainsString($attributes, trim($template->render()));
+    }
+
+    /**
+     * @return iterable<array{0: string, 1: bool}>
+     */
+    public static function providePrefixedAttributesCases(): iterable
+    {
+        // General
+        yield ['x:men', false]; // Nested
+        yield ['x:men="u"', false];  // Nested
+        yield ['x-men', true];
+        yield ['x-men="u"', true];
+
+        // AlpineJS
+        yield ['x-click="count++"', true];
+        yield ['x-on:click="count++"', true];
+        yield ['@click="open"', true];
+        // Not AlpineJS
+        yield ['z-click="count++"', true];
+        yield ['z-on:click="count++"', false]; // Nested
+
+        // Stencil
+        yield ['onClick="count++"', true];
+        yield ['@onClick="count++"', true];
+
+        // VueJs
+        yield ['v-model="message"', true];
+        yield ['v-bind:id="dynamicId"', true];
+        yield ['v-bind:id', true];
+        yield ['@submit.prevent="onSubmit"', true];
+        // Not VueJs
+        yield ['z-model="message"', true];
+        yield ['z-bind:id="dynamicId"', false]; // Nested
+        yield ['z-bind:id', false]; // Nested
+    }
+
     public function testRenderingHtmlSyntaxComponentWithNestedAttributes(): void
     {
         $output = self::getContainer()
@@ -309,7 +378,8 @@ final class ComponentExtensionTest extends KernelTestCase
             ->render()
         ;
 
-        $this->assertSame(<<<HTML
+        $this->assertSame(
+            <<<HTML
             <main>
                 <div>
                     <span>
@@ -324,15 +394,16 @@ final class ComponentExtensionTest extends KernelTestCase
 
         $output = self::getContainer()
             ->get(Environment::class)
-            ->createTemplate('<twig:NestedAttributes class="foo" title:class="bar" title:span:class="baz" inner:class="foo" />')
+            ->createTemplate('<twig:NestedAttributes class="foo" title:class="bar" title:span:class="baz" inner:class="foo" inner:@class="qux" @class="vex" />')
             ->render()
         ;
 
-        $this->assertSame(<<<HTML
-            <main class="foo">
+        $this->assertSame(
+            <<<HTML
+            <main class="foo" @class="vex">
                 <div class="bar">
                     <span class="baz">
-                        <div class="foo"/>
+                        <div class="foo" @class="qux"/>
 
                     </span>
                 </div>
@@ -354,9 +425,67 @@ final class ComponentExtensionTest extends KernelTestCase
     public function testComponentWithConflictBetweenPropsFromTemplateAndClass(): void
     {
         $this->expectException(RuntimeError::class);
-        $this->expectExceptionMessage('Cannot define prop "name" in template "components/Conflict.html.twig". Property already defined in component class "Symfony\UX\TwigComponent\Tests\Fixtures\Component\Conflict".');
+        $this->expectExceptionMessage('Cannot define prop "name" in template "components/Conflict.html.twig". Property already defined in component class "Symfony\UX\TwigComponent\Tests\Fixtures\Component\Conflict"');
 
         self::getContainer()->get(Environment::class)->render('component_with_conflict_between_props_from_template_and_class.html.twig');
+    }
+
+    public function testComponentWithEmptyProps(): void
+    {
+        $output = self::getContainer()->get(Environment::class)->render('anonymous_component_with_empty_props.html.twig');
+
+        $this->assertStringContainsString('I have an empty props tag', $output);
+    }
+
+    /**
+     * @dataProvider provideUnsafeAttributes
+     */
+    public function testHtmlSyntaxEscapesAttributeValues(string $input): void
+    {
+        $output = self::getContainer()->get(Environment::class)->render(
+            'anonymous_component_with_html_syntax.html.twig',
+            ['input' => $input]
+        );
+
+        $this->assertStringNotContainsString('<script', $output);
+        $this->assertStringContainsString('&lt;scr', $output);
+    }
+
+    /**
+     * @dataProvider provideUnsafeAttributes
+     */
+    public function testDynamicSyntaxEscapesAttributeValues(string $input): void
+    {
+        $output = self::getContainer()->get(Environment::class)->render(
+            'anonymous_component_with_dynamic_syntax.html.twig',
+            ['input' => $input]
+        );
+
+        $this->assertStringNotContainsString('<script', $output);
+        $this->assertStringContainsString('&lt;scr', $output);
+    }
+
+    public static function provideUnsafeAttributes(): iterable
+    {
+        return array_map(fn ($s) => (array) $s, [
+            '"><script>alert("XSS")</script>',
+            '\"><script>alert(\"XSS\")</script>',
+            "'><script>alert(\"XSS\")</script>",
+            "\'><script>alert(\"XSS\")</script>",
+        ]);
+    }
+
+    /**
+     * @group legacy
+     */
+    public function testAnonymousComponentWithPropsOverwriteParentsProps(): void
+    {
+        $this->expectDeprecation('Since symfony/ux-twig-component 2.20: Twig Function "cva" is deprecated; use "html_cva" from the "twig/html-extra" package (available since version 3.12) instead.');
+
+        $output = self::getContainer()->get(Environment::class)->render('anonymous_component_with_props_overwrite_parents_props.html.twig');
+
+        $this->assertStringContainsString('I am an icon', $output);
+        $this->assertStringNotContainsString('I am md', $output);
     }
 
     private function renderComponent(string $name, array $data = []): string

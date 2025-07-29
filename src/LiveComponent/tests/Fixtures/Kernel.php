@@ -31,6 +31,7 @@ use Symfony\UX\LiveComponent\LiveComponentBundle;
 use Symfony\UX\LiveComponent\Tests\Fixtures\Component\Component1;
 use Symfony\UX\LiveComponent\Tests\Fixtures\Serializer\Entity2Normalizer;
 use Symfony\UX\LiveComponent\Tests\Fixtures\Serializer\MoneyNormalizer;
+use Symfony\UX\StimulusBundle\StimulusBundle;
 use Symfony\UX\TwigComponent\TwigComponentBundle;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -50,14 +51,14 @@ final class Kernel extends BaseKernel
         return new Response('index');
     }
 
-    public function renderTemplate(string $template, Environment $twig = null): Response
+    public function renderTemplate(string $template, ?Environment $twig = null): Response
     {
         $twig ??= $this->container->get('twig');
 
         return new Response($twig->render("{$template}.html.twig"));
     }
 
-    public function renderNamespacedTemplate(string $template, Environment $twig = null): Response
+    public function renderNamespacedTemplate(string $template, ?Environment $twig = null): Response
     {
         $twig ??= $this->container->get('twig');
 
@@ -72,6 +73,7 @@ final class Kernel extends BaseKernel
         yield new SecurityBundle();
         yield new TwigComponentBundle();
         yield new LiveComponentBundle();
+        yield new StimulusBundle();
         yield new ZenstruckFoundryBundle();
     }
 
@@ -89,6 +91,7 @@ final class Kernel extends BaseKernel
     protected function configureContainer(ContainerConfigurator $c): void
     {
         $frameworkConfig = [
+            'csrf_protection' => ['enabled' => false],
             'secret' => 'S3CRET',
             'test' => true,
             'router' => ['utf8' => true],
@@ -140,9 +143,7 @@ final class Kernel extends BaseKernel
             'anonymous_template_directory' => 'components/',
         ]);
 
-        $c->extension('zenstruck_foundry', [
-            'auto_refresh_proxies' => false,
-        ]);
+        $c->extension('zenstruck_foundry', []);
 
         $doctrineConfig = [
             'dbal' => [
@@ -169,6 +170,7 @@ final class Kernel extends BaseKernel
                 ],
             ],
         ];
+
         if (null !== $doctrineBundleVersion = InstalledVersions::getVersion('doctrine/doctrine-bundle')) {
             if (version_compare($doctrineBundleVersion, '2.8.0', '>=')) {
                 $doctrineConfig['orm']['enable_lazy_ghost_objects'] = true;
@@ -179,13 +181,15 @@ final class Kernel extends BaseKernel
                 $doctrineConfig['orm']['validate_xml_mapping'] = true;
                 $doctrineConfig['dbal']['schema_manager_factory'] = 'doctrine.dbal.default_schema_manager_factory';
             }
+            if (version_compare($doctrineBundleVersion, '2.12.0', '>=')) {
+                $doctrineConfig['orm']['controller_resolver']['auto_mapping'] = false;
+            }
+            if (\PHP_VERSION_ID >= 80400 && version_compare($doctrineBundleVersion, '2.15.0', '>=')) {
+                $doctrineConfig['orm']['enable_native_lazy_objects'] = true;
+            }
         }
 
         $c->extension('doctrine', $doctrineConfig);
-
-        $c->extension('zenstruck_foundry', [
-            'auto_refresh_proxies' => false,
-        ]);
 
         $c->services()
             ->defaults()
@@ -212,5 +216,8 @@ final class Kernel extends BaseKernel
         $routes->add('render_namespaced_template', '/render-namespaced-template/{template}')->controller('kernel::renderNamespacedTemplate');
         $routes->add('homepage', '/')->controller('kernel::index');
         $routes->add('alternate_live_route', '/alt/{_live_component}/{_live_action}')->defaults(['_live_action' => 'get']);
+        $routes->add('localized_route', '/locale/{_locale}/{_live_component}/{_live_action}')->defaults(['_live_action' => 'get']);
+        $routes->add('route_with_prop', '/route_with_prop/{pathProp}');
+        $routes->add('route_with_alias_prop', '/route_with_alias_prop/{pathAlias}');
     }
 }

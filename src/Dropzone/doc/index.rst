@@ -28,9 +28,9 @@ needed if you're using AssetMapper):
     $ npm install --force
     $ npm run watch
 
-    # or use yarn
-    $ yarn install --force
-    $ yarn watch
+.. note::
+
+    For more complex installation scenarios, you can install the JavaScript assets through the `@symfony/ux-dropzone npm package`_
 
 Usage
 -----
@@ -62,7 +62,7 @@ Symfony UX Dropzone provides a default stylesheet in order to ease
 usage. You can disable it to add your own design if you wish.
 
 In ``assets/controllers.json``, disable the default stylesheet by
-switching the ``@symfony/ux-dropzone/src/style.css`` autoimport to
+switching the ``@symfony/ux-dropzone/dist/style.min.css`` autoimport to
 ``false``:
 
 .. code-block:: json
@@ -74,7 +74,7 @@ switching the ``@symfony/ux-dropzone/src/style.css`` autoimport to
                     "enabled": true,
                     "fetch": "eager",
                     "autoimport": {
-                        "@symfony/ux-dropzone/src/style.css": false
+                        "@symfony/ux-dropzone/dist/style.min.css": false
                     }
                 }
             }
@@ -85,9 +85,9 @@ switching the ``@symfony/ux-dropzone/src/style.css`` autoimport to
 .. note::
 
    *Note*: you should put the value to ``false`` and not remove the line
-   so that Symfony Flex won’t try to add the line again in the future.
+   so that Symfony Flex won't try to add the line again in the future.
 
-Once done, the default stylesheet won’t be used anymore and you can
+Once done, the default stylesheet won't be used anymore and you can
 implement your own CSS on top of the Dropzone.
 
 Extend the default behavior
@@ -157,5 +157,6 @@ This bundle aims at following the same Backward Compatibility promise as
 the Symfony framework:
 https://symfony.com/doc/current/contributing/code/bc.html
 
-.. _`the Symfony UX initiative`: https://symfony.com/ux
+.. _`the Symfony UX initiative`: https://ux.symfony.com/
 .. _StimulusBundle configured in your app: https://symfony.com/bundles/StimulusBundle/current/index.html
+.. _`@symfony/ux-dropzone npm package`: https://www.npmjs.com/package/@symfony/ux-dropzone

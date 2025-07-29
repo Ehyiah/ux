@@ -7,12 +7,11 @@
  * file that was distributed with this source code.
  */
 
-'use strict';
-
 import { Application, Controller } from '@hotwired/stimulus';
-import { getByTestId, waitFor, getByText } from '@testing-library/dom';
+import { getByTestId, getByText, waitFor } from '@testing-library/dom';
 import user from '@testing-library/user-event';
-import { clearDOM, mountDOM } from '@symfony/stimulus-testing';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { clearDOM, mountDOM } from '../../../../test/stimulus-helpers';
 import TogglePasswordController from '../src/controller';
 
 // Controller used to check the actual controller was properly booted
@@ -28,14 +27,14 @@ const startStimulus = () => {
     const application = Application.start();
     application.register('check', CheckController);
     application.register('toggle-password', TogglePasswordController);
-}
+};
 
 describe('TogglePasswordController', () => {
-    let container;
+    let container: HTMLElement;
 
     beforeEach(() => {
         container = mountDOM(`
-        <div class="toggle-password-container"> 
+        <div class="toggle-password-container">
                 <input type="password"
                 data-testid="input"
                 data-controller="check toggle-password"

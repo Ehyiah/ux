@@ -7,10 +7,13 @@
  * file that was distributed with this source code.
  */
 
-'use strict';
-
 import { Controller } from '@hotwired/stimulus';
-import Chart from 'chart.js/auto';
+import { Chart, registerables } from 'chart.js';
+
+// ChartJs 3.x
+if (registerables) {
+    Chart.register(...registerables);
+}
 
 let isChartInitialized = false;
 
@@ -54,6 +57,15 @@ export default class extends Controller {
         this.dispatchEvent('connect', { chart: this.chart });
     }
 
+    disconnect() {
+        this.dispatchEvent('disconnect', { chart: this.chart });
+
+        if (this.chart) {
+            this.chart.destroy();
+            this.chart = null;
+        }
+    }
+
     /**
      * If the underlying data or options change, let's update the chart!
      */
@@ -75,7 +87,7 @@ export default class extends Controller {
             const parentElement = this.element.parentElement;
             if (parentElement && this.chart.options.responsive) {
                 const originalWidth = parentElement.style.width;
-                parentElement.style.width = parentElement.offsetWidth + 1 + 'px';
+                parentElement.style.width = `${parentElement.offsetWidth + 1}px`;
                 setTimeout(() => {
                     parentElement.style.width = originalWidth;
                 }, 0);

@@ -12,6 +12,7 @@
 namespace Symfony\UX\LiveComponent\Test;
 
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -29,6 +30,8 @@ use Symfony\UX\TwigComponent\Test\RenderedComponent;
 final class TestLiveComponent
 {
     private bool $performedInitialRequest = false;
+
+    private ?string $locale = null;
 
     /**
      * @internal
@@ -76,11 +79,12 @@ final class TestLiveComponent
     }
 
     /**
-     * @param array<string,mixed> $arguments
+     * @param array<string,mixed>         $arguments
+     * @param array<string, UploadedFile> $files
      */
-    public function call(string $action, array $arguments = []): self
+    public function call(string $action, array $arguments = [], array $files = []): self
     {
-        return $this->request(['args' => $arguments], $action);
+        return $this->request(['args' => $arguments], $action, $files);
     }
 
     /**
@@ -98,7 +102,7 @@ final class TestLiveComponent
         }
 
         if (!$actions) {
-            throw new \InvalidArgumentException(sprintf('Event "%s" does not exist on component "%s".', $event, $this->metadata->getName()));
+            throw new \InvalidArgumentException(\sprintf('Event "%s" does not exist on component "%s".', $event, $this->metadata->getName()));
         }
 
         if (1 === \count($listeners)) {
@@ -123,10 +127,26 @@ final class TestLiveComponent
         return $this->client()->getResponse();
     }
 
-    private function request(array $content = [], ?string $action = null): self
+    public function submitForm(array $formValues, ?string $action = null): self
     {
-        $csrfToken = $this->csrfToken();
+        $flattenValues = $this->flattenFormValues($formValues);
 
+        return $this->request(['updated' => $flattenValues, 'validatedFields' => array_keys($flattenValues)], $action);
+    }
+
+    /**
+     * @experimental
+     */
+    public function setRouteLocale(string $locale): self
+    {
+        $this->performedInitialRequest = false;
+        $this->locale = $locale;
+
+        return $this;
+    }
+
+    private function request(array $content = [], ?string $action = null, array $files = []): self
+    {
         $this->client()->request(
             'POST',
             $this->router->generate(
@@ -134,10 +154,11 @@ final class TestLiveComponent
                 array_filter([
                     '_live_component' => $this->metadata->getName(),
                     '_live_action' => $action,
-                ])
+                    '_locale' => $this->locale,
+                ], static fn (mixed $v): bool => null !== $v),
             ),
             parameters: ['data' => json_encode(array_merge($content, ['props' => $this->props()]))],
-            server: $csrfToken ? ['HTTP_X_CSRF_TOKEN' => $csrfToken] : [],
+            files: $files,
         );
 
         return $this;
@@ -152,17 +173,6 @@ final class TestLiveComponent
         }
 
         return json_decode($node->attr('data-live-props-value'), true, flags: \JSON_THROW_ON_ERROR);
-    }
-
-    private function csrfToken(): ?string
-    {
-        $crawler = $this->client()->getCrawler();
-
-        if (!\count($node = $crawler->filter('[data-live-csrf-value]'))) {
-            return null;
-        }
-
-        return $node->attr('data-live-csrf-value');
     }
 
     private function client(): KernelBrowser
@@ -181,9 +191,10 @@ final class TestLiveComponent
         if ('POST' === strtoupper($this->metadata->get('method'))) {
             $this->client->request(
                 'POST',
-                $this->router->generate($this->metadata->get('route'), [
+                $this->router->generate($this->metadata->get('route'), array_filter([
                     '_live_component' => $this->metadata->getName(),
-                ]),
+                    '_locale' => $this->locale,
+                ], static fn (mixed $v): bool => null !== $v)),
                 [
                     'data' => json_encode(['props' => $props->getProps()], flags: \JSON_THROW_ON_ERROR),
                 ],
@@ -191,15 +202,66 @@ final class TestLiveComponent
         } else {
             $this->client->request('GET', $this->router->generate(
                 $this->metadata->get('route'),
-                [
+                array_filter([
                     '_live_component' => $this->metadata->getName(),
+                    '_locale' => $this->locale,
                     'props' => json_encode($props->getProps(), flags: \JSON_THROW_ON_ERROR),
-                ]
+                ], static fn (mixed $v): bool => null !== $v),
             ));
         }
 
         $this->performedInitialRequest = true;
 
         return $this->client;
+    }
+
+    private function flattenFormValues(array $values, string $prefix = ''): array
+    {
+        $result = [];
+
+        foreach ($values as $key => $value) {
+            if (\is_array($value)) {
+                $result += $this->flattenFormValues($value, $prefix.$key.'.');
+            } else {
+                $result[$prefix.$key] = $value;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return ?array{data: array<string, int|float|string|bool|null>, event: non-empty-string}
+     */
+    public function getEmittedEvent(RenderedComponent $render, string $eventName): ?array
+    {
+        $events = $this->getEmittedEvents($render);
+
+        foreach ($events as $event) {
+            if ($event['event'] === $eventName) {
+                return $event;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<array{data: array<string, int|float|string|bool|null>, event: non-empty-string}>
+     */
+    public function getEmittedEvents(RenderedComponent $render): array
+    {
+        $emit = $render->crawler()->filter('[data-live-name-value]')->attr('data-live-events-to-emit-value');
+
+        if (null === $emit) {
+            return [];
+        }
+
+        return json_decode($emit, associative: true, flags: \JSON_THROW_ON_ERROR);
+    }
+
+    public function getName(): string
+    {
+        return $this->metadata->getName();
     }
 }

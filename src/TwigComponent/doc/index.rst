@@ -32,16 +32,16 @@ Done! Now render it wherever you want:
 
 .. code-block:: html+twig
 
-    {{ component('Alert', { message: 'Hello Twig Components!' }) }}
+    {{ component('Alert', {message: 'Hello Twig Components!'}) }}
 
     <twig:Alert message="Or use the fun HTML syntax!" />
 
 Enjoy your new component!
 
 .. image:: images/alert-example.png
-   :alt: Example of the Alert Component
+    :alt: Example of the Alert Component
 
-   Example of the Alert Component
+    Example of the Alert Component
 
 This brings the familiar "component" system from client-side frameworks
 into Symfony. Combine this with `Live Components`_, to create
@@ -118,23 +118,27 @@ and any other components by running:
 
 .. code-block:: terminal
 
-    $ php bin/console debug:twig-component --dir=bar
+    $ php bin/console debug:twig-component
 
 Take a moment to fist pump - then come back!
+
+.. tip::
+
+    If you use the `Symfony MakerBundle`_, you can easily create a new component
+    with the ``make:twig-component`` command:
+
+    .. code-block:: terminal
+
+        $ php bin/console make:twig-component Alert
 
 .. _naming:
 
 Naming Your Component
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. versionadded:: 2.8
-
-    Before 2.8, passing a name to ``AsTwigComponent`` was required. Now, the
-    name is optional and defaults to the class name.
-
 To give your component a name, TwigComponent looks at the namespace(s)
 configured in :ref:`twig_component.yaml <default_config>` and finds the
-first match. If your have the recommended ``App\Twig\Components\``, then:
+first match. If you have the recommended ``App\Twig\Components\``, then:
 
 ========================================  ===================
 Component Class                            Component Name
@@ -193,7 +197,7 @@ them as "props" via the a 2nd argument to ``component()``:
 
 .. code-block:: twig
 
-    {{ component('Alert', { message: 'Successfully created!' }) }}
+    {{ component('Alert', {message: 'Successfully created!'}) }}
 
     {{ component('Alert', {
         type: 'danger',
@@ -235,7 +239,7 @@ available in every component template:
 
 .. code-block:: html+twig
 
-    <div {{ attributes.defaults({ class: 'alert alert-'~ type }) }}>
+    <div {{ attributes.defaults({class: 'alert alert-' ~ type}) }}>
         {{ message }}
     </div>
 
@@ -255,7 +259,7 @@ Component Name       Template Path
 ``Button:Primary``   ``templates/components/Button/Primary.html.twig``
 ===================  ==================================================
 
-Any `:` in the name are changed to subdirectories.s
+Any ``:`` in the name are changed to subdirectories.
 
 You can control the template used via the ``AsTwigComponent`` attribute:
 
@@ -270,6 +274,8 @@ You can control the template used via the ``AsTwigComponent`` attribute:
 
 You can also configure the default template directory for an entire
 namespace. See :ref:`Configuration <configuration>`.
+
+.. _component_html_syntax:
 
 Component HTML Syntax
 ~~~~~~~~~~~~~~~~~~~~~
@@ -293,7 +299,24 @@ prefix the attribute with ``:`` or use the normal ``{{ }}`` syntax:
     <twig:Alert message="hello!" user="{{ user.id }}" />
 
     // pass object, array, or anything you imagine
-    <twig:Alert :foo="['col' => ['foo', 'oof']]" />
+    <twig:Alert :foo="{col: ['foo', 'oof']}" />
+
+Boolean props are converted using PHP's type juggling rules. The
+string ``"false"`` is converted to the boolean ``true``.
+
+To pass the boolean ``false``, you can pass a Twig expression
+``{{ false }}`` or use the dynamic syntax (with the ``:`` prefix):
+
+.. code-block:: html+twig
+
+    {# ❌ the string 'false' is converted to the boolean 'true' #}
+    <twig:Alert message="..." withCloseButton="false" />
+
+    {# ✅ use the 'false' boolean value #}
+    <twig:Alert message="..." withCloseButton="{{ false }}" />
+
+    {# ✅ use the dynamic syntax #}
+    <twig:Alert message="..." :withCloseButton="false" />
 
 Don't forget that you can mix and match props with attributes that you
 want to render on the root element:
@@ -307,7 +330,7 @@ This requires Twig 3.7.0 or higher:
 
 .. code-block:: html+twig
 
-    <twig:Alert{{ ...myAttributes }} />
+    <twig:Alert {{ ...myAttributes }} />
 
 We'll use the HTML syntax for the rest of the guide.
 
@@ -329,7 +352,7 @@ close tag, it's passed to your component template as the block called
 
 .. code-block:: html+twig
 
-    <div {{ attributes.defaults({ class: 'alert alert-'~ type }) }}">
+    <div {{ attributes.defaults({class: 'alert alert-' ~ type}) }}>
         {% block content %}{% endblock %}
     </div>
 
@@ -337,13 +360,37 @@ You can even give the block default content. See
 :ref:`Passing HTML to Components via Block <embedded-components>`
 for more info.
 
+Using macros in Components
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Defining contents inside a component works great, but what if you want to
+use a macro inside a component? Good news: you can! But there's a catch:
+you cannot import macros using the ``_self`` keyword. Instead, you need to
+use the full path of the template where the macro is defined:
+
+.. code-block:: html+twig
+
+    {% macro message_formatter(message) %}
+        <strong>{{ message }}</strong>
+    {% endmacro %}
+
+    <twig:Alert>
+        {# ❌ this won't work #}
+        {% from _self import message_formatter %}
+
+        {# ✅ this works as expected #}
+        {% from 'path/of/this/template.html.twig' import message_formatter %}
+
+        {{ message_formatter('...') }}
+    </twig:Alert>
+
 Fetching Services
 -----------------
 
 Let's create a more complex example: a "featured products" component.
 You *could* choose to pass an array of Product objects to the component
 and set those on a ``$products`` property. But instead, let's let the
-*component* to do the work of executing the query.
+*component* do the work of executing the query.
 
 How? Components are *services*, which means autowiring works like
 normal. This example assumes you have a ``Product`` Doctrine entity and
@@ -358,11 +405,8 @@ normal. This example assumes you have a ``Product`` Doctrine entity and
     #[AsTwigComponent]
     class FeaturedProducts
     {
-        private ProductRepository $productRepository;
-
-        public function __construct(ProductRepository $productRepository)
+        public function __construct(private ProductRepository $productRepository)
         {
-            $this->productRepository = $productRepository;
         }
 
         public function getProducts(): array
@@ -403,15 +447,24 @@ need to populate, you can render it with:
 Mounting Data
 -------------
 
-Most of the time, you will create public properties and then pass values
-to those as "props" when rendering. But there are several hooks in case
-you need to do something more complex.
+Most of the time, you will create public properties and pass values to them
+as "props" when rendering the component. However, there are several hooks
+available when you need to perform more complex logic.
 
 The mount() Method
 ~~~~~~~~~~~~~~~~~~
 
-For more control over how your "props" are handled, you can create a method
-called ``mount()``::
+The ``mount()`` method gives you more control over how your "props" are handled.
+It is called once, immediately after the component is instantiated, **but before**
+the component system assigns the props you passed when rendering.
+
+For example, if you call your component like this:
+
+.. code-block:: html+twig
+
+    <twig:Alert type="error" message="..."/>
+
+The following code won't work as expected::
 
     // src/Twig/Components/Alert.php
     // ...
@@ -422,30 +475,60 @@ called ``mount()``::
         public string $message;
         public string $type = 'success';
 
-        public function mount(bool $isSuccess = true)
+        public function mount(): void
         {
-            $this->type = $isSuccess ? 'success' : 'danger';
+            {# ❌ this won't work: at this point $type still has its default value.
+                   Passed values are not yet available in props. #}
+            if ('error' === $this->type) {
+                // ...
+            }
         }
 
         // ...
     }
 
-The ``mount()`` method is called just one time: immediately after your
-component is instantiated. Because the method has an ``$isSuccess``
-argument, if we pass an ``isSuccess`` prop when rendering, it will be
-passed to ``mount()``.
+Inside ``mount()``, each prop has only its *default* value (or ``null`` if it is
+untyped and has no default). If you need a prop's value, declare a parameter in
+``mount()`` whose name matches the prop instead of reading the public property::
+
+    public function mount(string $type): void
+    {
+        {# ✅ this works as expected: the $type argument in PHP has the value
+               passed to the 'type' prop in the Twig template #}
+        if ('error' === $type) {
+            // ...
+        }
+    }
+
+If a prop name (e.g. ``type``) matches an argument name in ``mount()``,
+its value will be passed only to the method. The component system **will not**
+set it on a public property or use it in the component's ``attributes``.
+
+``mount()`` can also receive props **even when no matching public property
+exists**. For example, pass an ``isError`` prop instead of ``type``:
 
 .. code-block:: html+twig
 
-    <twig:Alert
-        :isSuccess="false"
-        message="Danger Will Robinson!"
-    />
+    <twig:Alert isError="{{ true }}" message="..."/>
 
-If a prop name (e.g. ``isSuccess``) matches an argument name in ``mount()``,
-the prop will be passed as that argument and the component system will
-**not** try to set it directly on a property or use it for the component
-``attributes``.
+Define a ``$isError`` argument to capture the prop and initialize other
+properties using that value::
+
+    #[AsTwigComponent]
+    class Alert
+    {
+        public string $message;
+        public string $type = 'success';
+
+        public function mount(bool $isError = false): void
+        {
+            if ($isError) {
+                $this->type = 'danger';
+            }
+        }
+
+        // ...
+    }
 
 PreMount Hook
 ~~~~~~~~~~~~~
@@ -454,6 +537,7 @@ If you need to modify/validate data before it's *mounted* on the
 component use a ``PreMount`` hook::
 
     // src/Twig/Components/Alert.php
+    use Symfony\Component\OptionsResolver\OptionsResolver;
     use Symfony\UX\TwigComponent\Attribute\PreMount;
     // ...
 
@@ -468,16 +552,35 @@ component use a ``PreMount`` hook::
         {
             // validate data
             $resolver = new OptionsResolver();
+            $resolver->setIgnoreUndefined(true);
+
             $resolver->setDefaults(['type' => 'success']);
             $resolver->setAllowedValues('type', ['success', 'danger']);
             $resolver->setRequired('message');
             $resolver->setAllowedTypes('message', 'string');
 
-            return $resolver->resolve($data);
+            return $resolver->resolve($data) + $data;
         }
 
         // ...
     }
+
+.. note::
+
+    In its default configuration, the OptionsResolver treats all props.
+    However, if more props are passed than the options defined in the OptionsResolver,
+    an error will be prompted, indicating that one or more options do not exist.
+    To avoid this, use the ``ignoreUndefined()`` method with ``true``.
+    See `ignore not defined options`_ for more info::
+
+        $resolver->setIgnoreUndefined(true);
+
+    The major drawback of this configuration is that the OptionsResolver will
+    remove every non-defined option when resolving data. To maintain props that
+    have not been defined within the OptionsResolver, combine the data from the
+    hook with the resolved data::
+
+        return $resolver->resolve($data) + $data;
 
 The data returned from ``preMount()`` will be used as the props for mounting.
 
@@ -489,10 +592,6 @@ The data returned from ``preMount()`` will be used as the props for mounting.
 
 PostMount Hook
 ~~~~~~~~~~~~~~
-
-.. versionadded:: 2.1
-
-    The ``PostMount`` hook was added in TwigComponents 2.1.
 
 After a component is instantiated and its data mounted, you can run extra
 code via the ``PostMount`` hook::
@@ -561,7 +660,7 @@ name is determined by the location of the template:
 .. code-block:: html+twig
 
     {# templates/components/Button/Primary.html.twig #}
-    <button {{ attributes.defaults({ class: 'primary' }) }}>
+    <button {{ attributes.defaults({class: 'primary'}) }}>
         {% block content %}{% endblock %}
     </button>
 
@@ -610,7 +709,7 @@ To tell the system that ``icon`` and ``type`` are props and not attributes, use 
     {# templates/components/Button.html.twig #}
     {% props icon = null, type = 'primary' %}
 
-    <button {{ attributes.defaults({ class: 'btn btn-'~type }) }}>
+    <button {{ attributes.defaults({class: 'btn btn-'~type}) }}>
         {% block content %}{% endblock %}
         {% if icon %}
             <span class="fa-solid fa-{{ icon }}"></span>
@@ -645,6 +744,17 @@ You can also add more, named blocks:
 
 .. code-block:: html+twig
 
+    <div class="alert alert-{{ type }}">
+        {% block content %}{% endblock %}
+        {% block footer %}
+            <div>Default Footer content</div>
+        {% endblock %}
+     </div>
+
+Render these in the normal way.
+
+.. code-block:: html+twig
+
     <twig:Alert type="success">
         <div>Congrats on winning a free puppy!</div>
 
@@ -653,17 +763,6 @@ You can also add more, named blocks:
             <button class="btn btn-primary">Claim your prize</button>
         </twig:block>
     </twig:Alert>
-
-Render these in the normal way.
-
-.. code-block:: html+twig
-
-    <div class="alert alert-{{ type }}">
-        {% block content %}{% endblock %}
-        {% block footer %}
-            <div>Default Footer content</div>
-        {% endblock %}
-     </div>
 
 Passing content into your template can also be done with LiveComponents
 though there are some caveats to know related to variable scope.
@@ -678,14 +777,16 @@ There is also a non-HTML syntax that can be used:
         {% block footer %}... footer content{% endblock %}
     {% endcomponent %}
 
+.. _embedded-components-context:
+
 Context / Variables Inside of Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The content inside of the ``<twig:{Component}>`` should be viewed as living in its own,
+The content inside of the ``<twig:Component>`` should be viewed as living in its own,
 independent template, which extends the component's template. This has a few interesting
 consequences.
 
-First, inside of ``<twig:{Component}>``, the ``this`` variable represents
+First, inside of ``<twig:Component>``, the ``this`` variable represents
 the component you're *now* rendering *and* you have access to all of *that*
 component's variables:
 
@@ -741,19 +842,18 @@ When overriding the ``alert_message`` block, you have access to the ``message`` 
         </twig:block>
     </twig:SuccessAlert>
 
-.. versionadded:: 2.13
+.. _embedded-components-outerScope:
 
-    The ability to refer to the scope of higher components via the ``outerScope`` variable was added in 2.13.
-
-As mentioned before, variables from lower components are merged with those from upper components. When you need
-access to some properties or functions from higher components, that can be done via the ``outerScope...`` variable:
+As mentioned before, variables from lower components are merged with those from
+upper components. When you need access to some properties or functions from higher
+components, that can be done via the ``outerScope...`` variable:
 
 .. code-block:: twig
 
     {# templates/SuccessAlert.html.twig #}
     {% set name = 'Fabien' %}
     {% set message = 'Hello' %}
-    {% component Alert with { type: 'success', name: 'Bart' } %}
+    {% component Alert with {type: 'success', name: 'Bart'} %}
         Hello {{ name }} {# Hello Bart #}
 
         {{ message }} {{ outerScope.name }} {# Hello Fabien #}
@@ -763,6 +863,11 @@ access to some properties or functions from higher components, that can be done 
         {{ outerScope.this.someProp }} {# references a "someProp" prop from SuccessAlert #}
     {% endcomponent %}
 
+.. versionadded:: 2.13
+
+    The ability to refer to the scope of higher components via the ``outerScope``
+    variable was added in 2.13.
+
 You can keep referring to components higher up as well. Just add another ``outerScope``.
 Remember though that the ``outerScope`` reference only starts once you're INSIDE the (embedded) component.
 
@@ -771,7 +876,7 @@ Remember though that the ``outerScope`` reference only starts once you're INSIDE
     {# templates/FancyProfileCard.html.twig #}
     {% component Card %}
         {% block header %}
-            {% component Alert with { message: outerScope.this.someProp } %} {# not yet INSIDE the Alert template #}
+            {% component Alert with {message: outerScope.this.someProp} %} {# not yet INSIDE the Alert template #}
                 {% block content %}
                     {{ message }} {# same value as below, indirectly refers to FancyProfileCard::someProp #}
                     {{ outerScope.outerScope.this.someProp }} {# directly refers to FancyProfileCard::someProp #}
@@ -780,14 +885,12 @@ Remember though that the ``outerScope`` reference only starts once you're INSIDE
         {% endblock %}
     {% endcomponent %}
 
+.. _embedded-components-outerBlocks:
+
 Inheritance & Forwarding "Outer Blocks"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. versionadded:: 2.10
-
-    The ``outerBlocks`` variable was added in 2.10.
-
-The content inside a ``<twig:{Component}>`` tag should be viewed as living in
+The content inside a ``<twig:`` component tag should be viewed as living in
 its own, independent template, which *extends* the component's template. This means that
 any blocks that live in the "outer" template are not available. However, you
 *can* access these via a special ``outerBlocks`` variable:
@@ -800,8 +903,10 @@ any blocks that live in the "outer" template are not available. However, you
 
   {% block body %}
     <twig:Alert>
-        {# block('call_to_action') #} would not work #}
+        {# this would NOT work... #}
+        {{ block('call_to_action') }}
 
+        {# ...but this works! #}
         {{ block(outerBlocks.call_to_action) }}
     </twig:Alert>
   {% endblock %}
@@ -821,7 +926,7 @@ We already have a generic ``Alert`` component, so let's re-use it:
 .. code-block:: html+twig
 
     {# templates/components/Alert.html.twig #}
-    <div {{ attributes.defaults({ class: 'alert alert-'~ type }) }}">
+    <div {{ attributes.defaults({class: 'alert alert-'~type}) }}">
         {% block content %}{% endblock %}
     </div>
 
@@ -832,11 +937,10 @@ that's passed to it via the ``outerBlocks`` variable and forward it into ``Alert
 
     {# templates/components/SuccessAlert.html.twig #}
     <twig:Alert type="success">
-    {% component Alert with { type: 'success' } %}
         {{ block(outerBlocks.content) }}
     </twig:Alert>
 
-By passing the original ``content`` block into the `content` block of ``Alert``,
+By passing the original ``content`` block into the ``content`` block of ``Alert``,
 this will work perfectly.
 
 .. _attributes:
@@ -853,7 +957,7 @@ component's template:
 .. code-block:: html+twig
 
     {# templates/components/MyComponent.html.twig #}
-    <div{{ attributes }}>
+    <div {{ attributes }}>
       My Component!
     </div>
 
@@ -873,7 +977,7 @@ Set an attribute's value to ``true`` to render just the attribute name:
 .. code-block:: html+twig
 
     {# templates/components/Input.html.twig #}
-    <input{{ attributes }}/>
+    <input {{ attributes }}/>
 
     {# render component #}
     <twig:Input type="text" value="" :autofocus="true" />
@@ -886,7 +990,7 @@ Set an attribute's value to ``false`` to exclude the attribute:
 .. code-block:: html+twig
 
     {# templates/components/Input.html.twig #}
-    <input{{ attributes }}/>
+    <input {{ attributes }}/>
 
     {# render component #}
     <twig:Input type="text" value="" :autofocus="false" />
@@ -898,14 +1002,15 @@ To add a custom `Stimulus controller`_ to your root component element:
 
 .. code-block:: html+twig
 
-    <div {{ attributes.defaults(stimulus_controller('my-controller', { someValue: 'foo' })) }}>
+    <div {{ attributes.defaults(stimulus_controller('my-controller', {someValue: 'foo'})) }}>
 
-.. versionadded:: 2.9
+.. note::
 
-    The ability to use ``stimulus_controller()`` with ``attributes.defaults()``
-    was added in TwigComponents 2.9 and requires ``symfony/stimulus-bundle``.
-    Previously, ``stimulus_controller()`` was passed to an ``attributes.add()``
-    method.
+    The ``stimulus_controller()`` function requires ``symfony/stimulus-bundle``.
+
+    .. code-block:: terminal
+
+        $ composer require symfony/stimulus-bundle
 
 .. note::
 
@@ -927,16 +1032,16 @@ the exception of *class*. For ``class``, the defaults are prepended:
 .. code-block:: html+twig
 
     {# templates/components/MyComponent.html.twig #}
-    <button{{ attributes.defaults({ class: 'bar', type: 'button' }) }}>Save</button>
+    <button {{ attributes.defaults({class: 'bar', type: 'button'}) }}>Save</button>
 
     {# render component #}
-    {{ component('MyComponent', { style: 'color:red' }) }}
+    {{ component('MyComponent', {style: 'color:red'}) }}
 
     {# renders as: #}
     <button class="bar" type="button" style="color:red">Save</button>
 
     {# render component #}
-    {{ component('MyComponent', { class: 'foo', type: 'submit' }) }}
+    {{ component('MyComponent', {class: 'foo', type: 'submit'}) }}
 
     {# renders as: #}
     <button class="bar foo" type="submit">Save</button>
@@ -962,7 +1067,7 @@ You can take full control over the attributes that are rendered by using the
     </div>
 
     {# render component #}
-    {{ component('MyComponent', { style: 'color:red;' }) }}
+    {{ component('MyComponent', {style: 'color:red;'}) }}
 
     {# renders as: #}
     <div style="color:red; display:block;">
@@ -973,46 +1078,46 @@ You can take full control over the attributes that are rendered by using the
 
     There are a few important things to know about using ``render()``:
 
-    1. You need to be sure to call your ``render()`` methods before calling ``{{ attributes }}`` or some
+    #. You need to be sure to call your ``render()`` methods before calling ``{{ attributes }}`` or some
        attributes could be rendered twice. For instance:
 
-            .. code-block:: html+twig
+       .. code-block:: html+twig
 
-                {# templates/components/MyComponent.html.twig #}
-                <div
-                    {{ attributes }} {# called before style is rendered #}
-                    style="{{ attributes.render('style') }} display:block;"
-                >
-                    My Component!
-                </div>
+           {# templates/components/MyComponent.html.twig #}
+           <div
+               {{ attributes }} {# called before style is rendered #}
+               style="{{ attributes.render('style') }} display:block;"
+           >
+               My Component!
+           </div>
 
-                {# render component #}
-                {{ component('MyComponent', { style: 'color:red;' }) }}
+           {# render component #}
+           {{ component('MyComponent', {style: 'color:red;'}) }}
 
-                {# renders as: #}
-                <div style="color:red;" style="color:red; display:block;"> {# style is rendered twice! #}
-                    My Component!
-                </div>
+           {# renders as: #}
+           <div style="color:red;" style="color:red; display:block;"> {# style is rendered twice! #}
+               My Component!
+           </div>
 
-    2. If you add an attribute without calling ``render()``, it will be rendered twice. For instance:
+    #. If you add an attribute without calling ``render()``, it will be rendered twice. For instance:
 
-         .. code-block:: html+twig
+       .. code-block:: html+twig
 
-              {# templates/components/MyComponent.html.twig #}
-              <div
-                 style="display:block;" {# not calling attributes.render('style') #}
-                 {{ attributes }}
-              >
-                 My Component!
-              </div>
+           {# templates/components/MyComponent.html.twig #}
+           <div
+               style="display:block;" {# not calling attributes.render('style') #}
+               {{ attributes }}
+           >
+               My Component!
+           </div>
 
-              {# render component #}
-              {{ component('MyComponent', { style: 'color:red;' }) }}
+           {# render component #}
+           {{ component('MyComponent', {style: 'color:red;'}) }}
 
-              {# renders as: #}
-              <div style="display:block;" style="color:red;"> {# style is rendered twice! #}
-                 My Component!
-              </div>
+           {# renders as: #}
+           <div style="display:block;" style="color:red;"> {# style is rendered twice! #}
+               My Component!
+           </div>
 
 Only
 ~~~~
@@ -1022,10 +1127,10 @@ Extract specific attributes and discard the rest:
 .. code-block:: html+twig
 
     {# render component #}
-    {{ component('MyComponent', { class: 'foo', style: 'color:red' }) }}
+    {{ component('MyComponent', {class: 'foo', style: 'color:red'}) }}
 
     {# templates/components/MyComponent.html.twig #}
-    <div{{ attributes.only('class') }}>
+    <div {{ attributes.only('class') }}>
       My Component!
     </div>
 
@@ -1042,10 +1147,10 @@ Exclude specific attributes:
 .. code-block:: html+twig
 
     {# render component #}
-    {{ component('MyComponent', { class: 'foo', style: 'color:red' }) }}
+    {{ component('MyComponent', {class: 'foo', style: 'color:red'}) }}
 
     {# templates/components/MyComponent.html.twig #}
-    <div{{ attributes.without('class') }}>
+    <div {{ attributes.without('class') }}>
       My Component!
     </div>
 
@@ -1069,14 +1174,14 @@ and footer. Here's an example of this:
 .. code-block:: html+twig
 
     {# templates/components/Dialog.html.twig #}
-    <div{{ attributes }}>
-        <div{{ attributes.nested('title') }}>
+    <div {{ attributes }}>
+        <div {{ attributes.nested('title') }}>
             {% block title %}Default Title{% endblock %}
         </div>
-        <div{{ attributes.nested('body') }}>
+        <div {{ attributes.nested('body') }}>
             {% block content %}{% endblock %}
         </div>
-        <div{{ attributes.nested('footer') }}>
+        <div {{ attributes.nested('footer') }}>
             {% block footer %}Default Footer{% endblock %}
         </div>
     </div>
@@ -1114,16 +1219,16 @@ The nesting is recursive so you could potentially do something like this:
 Component with Complex Variants (CVA)
 -------------------------------------
 
-.. versionadded:: 2.16
+.. deprecated:: 2.20
 
-    The ``cva`` function was added in TwigComponents 2.16.
+    The ``cva`` function was deprecated in TwigComponents 2.20, and will be
+    removed in 3.0. The function is now provided by the ``twig/html-extra:^3.12``
+    package under the name `html_cva`_.
 
-`CVA (Class Variant Authority)`_ is a concept from the JavaScript world and used
-by the well-known `shadcn/ui`_.
-CVA allows you to display a component with different variants (color, size, etc.),
-to create highly reusable and customizable components. This is powered by a ``cva()`` Twig
-function where you define ``base`` classes that should always be present and then different
-``variants`` and the corresponding classes:
+`CVA (Class Variant Authority)`_ originates from the JavaScript ecosystem. It
+enables reusable, customizable components by managing variants (e.g., color, size).
+The ``cva()`` Twig function defines ``base`` classes (always applied) and variant-specific
+classes:
 
 .. code-block:: html+twig
 
@@ -1131,7 +1236,7 @@ function where you define ``base`` classes that should always be present and the
     {% props color = 'blue', size = 'md' %}
 
      {% set alert = cva({
-        base: 'alert ',
+        base: 'alert',
         variants: {
             color: {
                 blue: 'bg-blue',
@@ -1154,52 +1259,33 @@ Then use the ``color`` and ``size`` variants to select the classes needed:
 
 .. code-block:: html+twig
 
-    {# index.html.twig #}
-    <twig:Alert color="red" size="lg">
-        <div>My content</div>
-    </twig:Alert>
-    // class="alert bg-red text-lg"
-
     <twig:Alert color="green" size="sm">
-        <div>My content</div>
+        ...
     </twig:Alert>
-    // class="alert bg-green text-sm"
 
-    <twig:Alert color="red" class="flex items-center justify-center">
-        <div>My content</div>
-    </twig:Alert>
-    // class="alert bg-red text-md flex items-center justify-center"
+    {# will render as: #}
+
+     <div class="alert bg-green text-sm">
+        ...
+    </div>
 
 CVA and Tailwind CSS
 ~~~~~~~~~~~~~~~~~~~~
 
-CVA work perfectly with Tailwind CSS. The only drawback is that you can have class conflicts.
-To "merge" conflicting classes together and keep only the ones you need, use the
-``tailwind_merge()` method from `tales-from-a-dev/twig-tailwind-extra`_
-with the ``cva()`` function:
-
-.. code-block:: terminal
-
-    $ composer require tales-from-a-dev/twig-tailwind-extra
+CVA integrates seamlessly with Tailwind CSS, though class conflicts may occur.
+Use the ``tailwind_merge()`` function from `tales-from-a-dev/twig-tailwind-extra`_
+to resolve conflicts:
 
 .. code-block:: html+twig
 
-    {# templates/components/Alert.html.twig #}
-    {% props color = 'blue', size = 'md' %}
-
-   {% set alert = cva({
-       // ...
-    }) %}
-
-    <div class="{{ alert.apply({color, size}, attributes.render('class')) | tailwind_merge }}">
-         {% block content %}{% endblock %}
+    <div class="{{ alert.apply({color, size}, attributes.render('class'))|tailwind_merge }}">
+        {% block content %}{% endblock %}
     </div>
 
 Compound Variants
 ~~~~~~~~~~~~~~~~~
 
-You can define compound variants. A compound variant is a variant that applies
-when multiple other variant conditions are met.
+Define compound variants for conditions involving multiple variants:
 
 .. code-block:: html+twig
 
@@ -1207,23 +1293,14 @@ when multiple other variant conditions are met.
     {% props color = 'blue', size = 'md' %}
 
     {% set alert = cva({
-        base: 'alert ',
+        base: 'alert',
         variants: {
-            color: {
-                blue: 'bg-blue',
-                red: 'bg-red',
-                green: 'bg-green',
-            },
-            size: {
-                sm: 'text-sm',
-                md: 'text-md',
-                lg: 'text-lg',
-            }
+           color: { red: 'bg-red' },
+           size: { lg: 'text-lg' }
         },
         compoundVariants: [{
-            // if color = red AND size = (md or lg), add the `font-bold` class
             color: ['red'],
-            size: ['md', 'lg'],
+            size: ['lg'],
             class: 'font-bold'
         }]
     }) %}
@@ -1235,19 +1312,14 @@ when multiple other variant conditions are met.
     {# index.html.twig #}
 
     <twig:Alert color="red" size="lg">
-        <div>My content</div>
+        ...
     </twig:Alert>
-    // class="alert bg-red text-lg font-bold"
 
-    <twig:Alert color="green" size="sm">
-        <div>My content</div>
-    </twig:Alert>
-    // class="alert bg-green text-sm"
+    {# will render as: #}
 
-    <twig:Alert color="red" size="md">
-        <div>My content</div>
-    </twig:Alert>
-    // class="alert bg-green text-lg font-bold"
+    <div class="alert bg-red text-lg font-bold">
+        ...
+    </div>
 
 Default Variants
 ~~~~~~~~~~~~~~~~
@@ -1257,43 +1329,33 @@ If no variants match, you can define a default set of classes to apply:
 .. code-block:: html+twig
 
     {# templates/components/Alert.html.twig #}
-    {% props color = 'blue', size = 'md' %}
-
     {% set alert = cva({
-        base: 'alert ',
+        base: 'alert',
         variants: {
             color: {
-                blue: 'bg-blue',
-                red: 'bg-red',
-                green: 'bg-green',
-            },
-            size: {
-                sm: 'text-sm',
-                md: 'text-md',
-                lg: 'text-lg',
+                red: 'bg-red'
             },
             rounded: {
                 sm: 'rounded-sm',
-                md: 'rounded-md',
-                lg: 'rounded-lg',
+                md: 'rounded-md'
             }
         },
         defaultVariants: {
-            rounded: 'md',
+            rounded: 'md'
         }
     }) %}
 
-    <div class="{{ alert.apply({color, size}) }}">
-         {% block content %}{% endblock %}
-    </div>
-
     {# index.html.twig #}
 
-    <twig:Alert color="red" size="lg">
-        <div>My content</div>
+    <twig:Alert color="red">
+        ...
     </twig:Alert>
-    // class="alert bg-red text-lg font-bold rounded-md"
 
+    {# will render as: #}
+
+    <div class="alert bg-red rounded-md">
+        ...
+    </div>
 
 Test Helpers
 ------------
@@ -1326,7 +1388,7 @@ You can test how your component is mounted and rendered using the
                 data: ['foo' => 'bar'],
             );
 
-            $this->assertStringContainsString('bar', $rendered);
+            $this->assertStringContainsString('bar', (string) $rendered);
 
             // use the crawler
             $this->assertCount(5, $rendered->crawler()->filter('ul li'));
@@ -1344,7 +1406,7 @@ You can test how your component is mounted and rendered using the
                 ],
             );
 
-            $this->assertStringContainsString('bar', $rendered);
+            $this->assertStringContainsString('bar', (string) $rendered);
         }
     }
 
@@ -1477,6 +1539,12 @@ are called additional times, the cached value is used.
     Computed methods only work for component methods with no required
     arguments.
 
+.. tip::
+
+    Ensure to not use the ``ExposeInTemplate`` attribute on a computed method,
+    otherwise the method will be called twice instead of only once, leading to
+    unnecessary overhead and potential performance issues.
+
 Events
 ------
 
@@ -1518,20 +1586,12 @@ the twig template and twig variables before components are rendered::
 PostRenderEvent
 ~~~~~~~~~~~~~~~
 
-.. versionadded:: 2.5
-
-    The ``PostRenderEvent`` was added in TwigComponents 2.5.
-
 The ``PostRenderEvent`` is called after a component has finished
 rendering and contains the ``MountedComponent`` that was just
 rendered.
 
 PreCreateForRenderEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
-
-.. versionadded:: 2.5
-
-    The ``PreCreateForRenderEvent`` was added in TwigComponents 2.5.
 
 Subscribing to the ``PreCreateForRenderEvent`` gives the ability to be
 notified before a component object is created or hydrated, at the
@@ -1548,11 +1608,69 @@ listen to ``PreMountEvent`` or ``PostMountEvent``.
 Nested Components
 -----------------
 
-It's totally possible to nest one component into another. When you do
-this, there's nothing special to know: both components render
-independently. If you're using `Live Components`_, then there
-*are* some guidelines related to how the re-rendering of parent and
-child components works. Read `Live Nested Components`_.
+It's possible to include components inside another component:
+
+.. code-block:: html+twig
+
+    <twig:SomeComponent>
+        {% for i in 1..10 %}
+            <twig:AnotherComponent>
+                {{ i }}
+            </twig:AnotherComponent>
+        {% endfor %}
+    </twig:SomeComponent>
+
+When you do this, each component is rendered independently, but there are some
+important caveats:
+
+#. As :ref:`explained above <embedded-components-context>`, the variables of a
+   component are merged with the variables of its parent component. Variables
+   with the same name (e.g. ``this`` or ``computed``) are overridden by the
+   inner component;
+#. The original parent component variables are available via the special
+   :ref:`outerScope variable <embedded-components-outerScope>`, so you can, for
+   example, call ``outerScope.this.someFunction()``;
+#. The contents of blocks defined in parent components are available via the
+   special :ref:`outerBlocks variable <embedded-components-outerBlocks>`, so you
+   can call ``block(outerBlocks.someBlockName)``.
+
+Finally, you cannot mix the Twig syntax and the :ref:`HTML syntax <component_html_syntax>`
+when using nested components:
+
+.. code-block:: html+twig
+
+    {# ❌ this won't work because it mixes different syntaxes #}
+    <twig:Card>
+        {# ... #}
+
+        {% block footer %}
+            <twig:Button:Primary :isBlock="true">Edit</twig:Button:Primary>
+        {% endblock %}
+    </twig:Card>
+
+    {# ✅ this works because it only uses the HTML syntax #}
+    <twig:Card>
+        {# ... #}
+
+        <twig:block name="footer">
+            <twig:Button:Primary :isBlock="true">Edit</twig:Button:Primary>
+        </twig:block>
+    </twig:Card>
+
+    {# ✅ this also works because it only uses the Twig syntax #}
+    {% component Card %}
+        {# ... #}
+
+        {% block footer %}
+            {% component 'Button:Primary' with {isBlock: true} %}
+                {% block content %}Edit{% endblock %}
+            {% endcomponent %}
+        {% endblock %}
+    {% endcomponent %}
+
+If you're using `Live Components`_, there *are* additional guidelines related
+to how parent and child components are re-rendered. See `Live Nested Components`_
+for details.
 
 Configuration
 -------------
@@ -1592,37 +1710,66 @@ controls how components are named and where their templates live:
 If a component class matches multiple namespaces, the first matched will
 be used.
 
+3rd-Party Bundle
+----------------
+
+The flexibility of Twig Components is extended even further when integrated
+with third-party bundles, allowing developers to seamlessly include pre-built
+components into their projects.
+
+Anonymous Components
+~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 2.20
+
+    The bundle convention for Anonymous components was added in TwigComponents 2.20.
+
+Using a component from a third-party bundle is just as straightforward as using
+one from your own application. Once the bundle is installed and configured, you
+can reference its components directly within your Twig templates:
+
+.. code-block:: html+twig
+
+    <twig:Acme:Button type="primary">
+        Click me
+    </twig:Acme:Button>
+
+Here, the component name is composed of the bundle's Twig namespace ``Acme``, followed
+by a colon, and then the component path Button.
+
+.. note::
+
+    You can discover the Twig namespace of every registered bundle by inspecting the
+    ``bin/console debug:twig`` command.
+
+The component must be located in the bundle's ``templates/components/`` directory. For
+example, the component referenced as ``<twig:Acme:Button>`` should have its template
+file at ``templates/components/Button.html.twig`` within the Acme bundle.
+
 Debugging Components
 --------------------
 
 As your application grows, you'll eventually have a lot of components.
 This command will help you to debug some components issues.
 First, the debug:twig-component command lists all your application components
-who live in ``templates/components``:
+that live in ``templates/components/``:
 
 .. code-block:: terminal
 
     $ php bin/console debug:twig-component
 
     +---------------+-----------------------------+------------------------------------+------+
-    | Component     | Class                       | Template                           | Live |
+    | Component     | Class                       | Template                           | Type |
     +---------------+-----------------------------+------------------------------------+------+
     | Coucou        | App\Components\Alert        | components/Coucou.html.twig        |      |
-    | RandomNumber  | App\Components\RandomNumber | components/RandomNumber.html.twig  | X    |
+    | RandomNumber  | App\Components\RandomNumber | components/RandomNumber.html.twig  | Live |
     | Test          | App\Components\foo\Test     | components/foo/Test.html.twig      |      |
-    | Button        | Anonymous component         | components/Button.html.twig        |      |
-    | foo:Anonymous | Anonymous component         | components/foo/Anonymous.html.twig |      |
+    | Button        |                             | components/Button.html.twig        | Anon |
+    | foo:Anonymous |                             | components/foo/Anonymous.html.twig | Anon |
+    | Acme:Button   |                             | @Acme/components/Button.html.twig  | Anon |
     +---------------+-----------------------------+------------------------------------+------+
 
-If you have some components that don't live in ``templates/components/``,
-but in ``templates/bar`` for example, you can pass an option:
-
-.. code-block:: terminal
-
-    $ php bin/console debug:twig-component --dir=bar
-
-And the name of some component to this argument to print the
-component details:
+Pass the name of some component as an argument to print its details:
 
 .. code-block:: terminal
 
@@ -1632,9 +1779,10 @@ component details:
     | Property                                          | Value                             |
     +---------------------------------------------------+-----------------------------------+
     | Component                                         | RandomNumber                      |
-    | Live                                              | X                                 |
     | Class                                             | App\Components\RandomNumber       |
     | Template                                          | components/RandomNumber.html.twig |
+    | Type                                              | Live                              |
+    +---------------------------------------------------+-----------------------------------+
     | Properties (type / name / default value if exist) | string $name = toto               |
     |                                                   | string $type = test               |
     | Live Properties                                   | int $max = 1000                   |
@@ -1661,5 +1809,7 @@ https://symfony.com/doc/current/contributing/code/bc.html
 .. _`Passing Blocks to Live Components`: https://symfony.com/bundles/ux-live-component/current/index.html#passing-blocks
 .. _`Stimulus controller`: https://symfony.com/bundles/StimulusBundle/current/index.html
 .. _`CVA (Class Variant Authority)`: https://cva.style/docs/getting-started/variants
-.. _`shadcn/ui`: https://ui.shadcn.com
+.. _`html_cva`: https://twig.symfony.com/doc/3.x/functions/html_cva.html
 .. _`tales-from-a-dev/twig-tailwind-extra`: https://github.com/tales-from-a-dev/twig-tailwind-extra
+.. _`ignore not defined options`: https://symfony.com/doc/current/components/options_resolver.html#ignore-not-defined-options
+.. _`Symfony MakerBundle`: https://symfony.com/bundles/SymfonyMakerBundle/current/index.html

@@ -36,6 +36,7 @@ class UxPackagesTest extends KernelTestCase
     public function testPackagePagesAllLoad(UxPackage $package, string $expectedText): void
     {
         $this->browser()
+            ->throwExceptions()
             ->visit('/'.$package->getName())
             ->assertSuccessful()
             ->assertSeeIn('title', $package->getHumanName())
@@ -43,7 +44,7 @@ class UxPackagesTest extends KernelTestCase
         ;
     }
 
-    public function getSmokeTests(): \Generator
+    public static function getSmokeTests(): \Generator
     {
         $repository = new UxPackageRepository();
         foreach ($repository->findAll() as $package) {
@@ -52,8 +53,13 @@ class UxPackagesTest extends KernelTestCase
                 yield $package->getName() => [$package, 'Read full Documentation'];
                 continue;
             }
+            if ('icons' === $package->getName()) {
+                // Icons has a different bottom section
+                yield $package->getName() => [$package, 'Documentation'];
+                continue;
+            }
 
-            yield $package->getName() => [$package, sprintf('Symfony UX %s Docs', $package->getHumanName())];
+            yield $package->getName() => [$package, \sprintf('%s Doc', $package->getHumanName())];
         }
     }
 }

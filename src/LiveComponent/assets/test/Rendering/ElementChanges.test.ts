@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import ElementChanges from '../../src/Rendering/ElementChanges';
 
 describe('ElementChanges', () => {
@@ -9,7 +10,7 @@ describe('ElementChanges', () => {
         changes.removeClass('new-class2');
 
         changes.addClass('new-class3');
-        changes.removeClass('removed-class')
+        changes.removeClass('removed-class');
 
         expect(changes.getAddedClasses()).toHaveLength(2);
         expect(changes.getAddedClasses()).toContain('new-class1');
@@ -29,8 +30,8 @@ describe('ElementChanges', () => {
         changes.removeStyle('margin', '10px');
 
         expect(changes.getChangedStyles()).toHaveLength(2);
-        expect(changes.getChangedStyles()).toContainEqual({ name: 'color', value: 'green'});
-        expect(changes.getChangedStyles()).toContainEqual({ name: 'display', value: 'none'});
+        expect(changes.getChangedStyles()).toContainEqual({ name: 'color', value: 'green' });
+        expect(changes.getChangedStyles()).toContainEqual({ name: 'display', value: 'none' });
         expect(changes.getRemovedStyles()).toHaveLength(1);
         expect(changes.getRemovedStyles()).toContain('margin');
     });
@@ -50,8 +51,8 @@ describe('ElementChanges', () => {
         changes.removeAttribute('disabled', '');
 
         expect(changes.getChangedAttributes()).toHaveLength(2);
-        expect(changes.getChangedAttributes()).toContainEqual({ name: 'data-foo', value: 'qux'});
-        expect(changes.getChangedAttributes()).toContainEqual({ name: 'align', value: 'none'});
+        expect(changes.getChangedAttributes()).toContainEqual({ name: 'data-foo', value: 'qux' });
+        expect(changes.getChangedAttributes()).toContainEqual({ name: 'align', value: 'none' });
         expect(changes.getRemovedAttributes()).toHaveLength(1);
         expect(changes.getRemovedAttributes()).toContain('data-bar');
     });

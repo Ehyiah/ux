@@ -1,6 +1,13 @@
 Symfony UX Swup
 ===============
 
+.. warning::
+
+    **Deprecated: This package has been deprecated in 2.x and will be removed in the next major version.**
+
+    To keep the same functionality in your Symfony application, please follow the migration steps
+    from the `Symfony UX Swup README.md`_.
+
 Symfony UX Swup is a Symfony bundle integrating `Swup`_ in
 Symfony applications. It is part of `the Symfony UX initiative`_.
 
@@ -30,9 +37,9 @@ needed if you're using AssetMapper):
     $ npm install --force
     $ npm run watch
 
-    # or use yarn
-    $ yarn install --force
-    $ yarn watch
+.. note::
+
+    For more complex installation scenarios, you can install the JavaScript assets through the `@symfony/ux-swup npm package`_
 
 Usage
 -----
@@ -202,7 +209,9 @@ the Symfony framework:
 https://symfony.com/doc/current/contributing/code/bc.html
 
 .. _`Swup`: https://swup.js.org/
-.. _`the Symfony UX initiative`: https://symfony.com/ux
+.. _`the Symfony UX initiative`: https://ux.symfony.com/
 .. _`StimulusBundle`: https://symfony.com/bundles/StimulusBundle/current/index.html
 .. _`Swup Options`: https://swup.js.org/options
 .. _StimulusBundle configured in your app: https://symfony.com/bundles/StimulusBundle/current/index.html
+.. _`@symfony/ux-swup npm package`: https://www.npmjs.com/package/@symfony/ux-swup
+.. _`Symfony UX Swup README.md`: https://github.com/symfony/ux/tree/2.x/src/Swup/README.md

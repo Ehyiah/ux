@@ -1,5 +1,5 @@
-/// <reference types="webpack-env" />
-import { ComponentClass, FunctionComponent } from 'react';
+import { FunctionComponent, ComponentClass } from 'react';
+
 type Component = string | FunctionComponent<object> | ComponentClass<object, any>;
 declare global {
     function resolveReactComponent(name: string): Component;
@@ -7,5 +7,6 @@ declare global {
         resolveReactComponent(name: string): Component;
     }
 }
-export declare function registerReactControllerComponents(context: __WebpackModuleApi.RequireContext): void;
-export {};
+declare function registerReactControllerComponents(context: __WebpackModuleApi.RequireContext): void;
+
+export { registerReactControllerComponents };

@@ -91,6 +91,7 @@ final class AutocompleteChoiceTypeExtension extends AbstractTypeExtension
         $values['loading-more-text'] = $this->trans($options['loading_more_text']);
         $values['no-results-found-text'] = $this->trans($options['no_results_found_text']);
         $values['no-more-results-text'] = $this->trans($options['no_more_results_text']);
+        $values['create-option-text'] = $this->trans($options['create_option_text']);
         $values['preload'] = $options['preload'];
 
         foreach ($values as $name => $value) {
@@ -108,7 +109,7 @@ final class AutocompleteChoiceTypeExtension extends AbstractTypeExtension
         $extraOptions[self::CHECKSUM_KEY] = $this->checksumCalculator->calculateForArray($extraOptions);
         $extraOptions = base64_encode(json_encode($extraOptions));
 
-        return sprintf(
+        return \sprintf(
             '%s%s%s',
             $url,
             $this->hasUrlParameters($url) ? '&' : '?',
@@ -127,7 +128,7 @@ final class AutocompleteChoiceTypeExtension extends AbstractTypeExtension
     {
         foreach ($extraOptions as $optionKey => $option) {
             if (!\is_scalar($option) && !\is_array($option) && null !== $option) {
-                throw new \InvalidArgumentException(sprintf('Extra option with key "%s" must be a scalar value, an array or null. Got "%s".', $optionKey, get_debug_type($option)));
+                throw new \InvalidArgumentException(\sprintf('Extra option with key "%s" must be a scalar value, an array or null. Got "%s".', $optionKey, get_debug_type($option)));
             }
 
             if (\is_array($option)) {
@@ -147,6 +148,7 @@ final class AutocompleteChoiceTypeExtension extends AbstractTypeExtension
             'loading_more_text' => 'Loading more results...',
             'no_results_found_text' => 'No results found',
             'no_more_results_text' => 'No more results',
+            'create_option_text' => 'Add %placeholder%...',
             'min_characters' => null,
             'max_results' => 10,
             'preload' => 'focus',

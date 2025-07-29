@@ -11,11 +11,8 @@
 
 namespace Symfony\UX\LiveComponent\Util;
 
-use Twig\Environment;
-use Twig\Extension\EscaperExtension;
-
 /**
- * An array of attributes that can eventually be returned as an escaped array.
+ * A collection of HTML attributes useful for LiveComponent.
  *
  * @internal
  */
@@ -23,22 +20,18 @@ final class LiveAttributesCollection
 {
     private array $attributes = [];
 
-    public function __construct(private Environment $twig)
+    public function toArray(): array
     {
-    }
-
-    public function toEscapedArray(): array
-    {
-        $escaped = [];
+        $result = [];
         foreach ($this->attributes as $key => $value) {
             if (\is_array($value)) {
                 $value = JsonUtil::encodeObject($value);
             }
 
-            $escaped[$key] = $this->escapeAttribute($value);
+            $result[$key] = $value;
         }
 
-        return $escaped;
+        return $result;
     }
 
     public function setLiveController(string $componentName): void
@@ -82,11 +75,6 @@ final class LiveAttributesCollection
         $this->attributes['data-live-url-value'] = $url;
     }
 
-    public function setCsrf(string $csrf): void
-    {
-        $this->attributes['data-live-csrf-value'] = $csrf;
-    }
-
     public function setListeners(array $listeners): void
     {
         $this->attributes['data-live-listeners-value'] = $listeners;
@@ -110,15 +98,5 @@ final class LiveAttributesCollection
     public function setQueryUrlMapping(array $queryUrlMapping): void
     {
         $this->attributes['data-live-query-mapping-value'] = $queryUrlMapping;
-    }
-
-    private function escapeAttribute(string $value): string
-    {
-        if (method_exists(EscaperExtension::class, 'escape')) {
-            return EscaperExtension::escape($this->twig, $value, 'html_attr');
-        }
-
-        // since twig/twig 3.9.0: Using the internal "twig_escape_filter" function is deprecated.
-        return (string) twig_escape_filter($this->twig, $value, 'html_attr');
     }
 }

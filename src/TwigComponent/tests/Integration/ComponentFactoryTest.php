@@ -87,14 +87,14 @@ final class ComponentFactoryTest extends KernelTestCase
     public function testExceptionThrownIfRequiredMountParameterIsMissingFromPassedData(): void
     {
         $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('Symfony\UX\TwigComponent\Tests\Fixtures\Component\ComponentC::mount() has a required $propA parameter. Make sure this is passed or make give a default value.');
+        $this->expectExceptionMessage('Symfony\UX\TwigComponent\Tests\Fixtures\Component\ComponentC::mount() has a required $propA parameter. Make sure to pass it or give it a default value.');
 
         $this->createComponent('component_c');
     }
 
     public function testStringableObjectCanBePassedToComponent(): void
     {
-        $attributes = $this->factory()->create('component_a', ['propB' => 'B', 'data-item-id-param' => new class() {
+        $attributes = $this->factory()->create('component_a', ['propB' => 'B', 'data-item-id-param' => new class {
             public function __toString(): string
             {
                 return 'test';
@@ -139,28 +139,43 @@ final class ComponentFactoryTest extends KernelTestCase
     {
         self::bootKernel(['environment' => 'legacy_anonymous']);
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->factory()->metadataFor('anonymous:AButton');
+        // Named templates should be found
+        $metadata = $this->factory()->metadataFor('foo:bar:baz');
+        $this->assertSame('components/foo/bar/baz.html.twig', $metadata->getTemplate());
 
+        // Prefixed nonymous templates should be found
+        $metadata = $this->factory()->metadataFor('anonymous:AButton');
+        $this->assertSame('anonymous/AButton.html.twig', $metadata->getTemplate());
+
+        // Unprefixed anonymous templates should not be found
         $this->expectException(\InvalidArgumentException::class);
         $this->factory()->metadataFor('AButton');
-
-        $metadata = $this->factory()->metadataFor('foo:bar:baz');
-        $this->assertSame('components/components/foo:bar:baz.html.twig', $metadata->getTemplate());
     }
 
     public function testAnonymous(): void
     {
         self::bootKernel(['environment' => 'anonymous_directory']);
 
+        // Named templates should be found
+        $metadata = $this->factory()->metadataFor('foo:bar:baz');
+        $this->assertSame('components/foo/bar/baz.html.twig', $metadata->getTemplate());
+
+        // Unprefix anonymous templates should be found
+        $metadata = $this->factory()->metadataFor('AButton');
+        $this->assertSame('anonymous/AButton.html.twig', $metadata->getTemplate());
+
+        // Prefixed anonymous templates should not be found
         $this->expectException(\InvalidArgumentException::class);
         $this->factory()->metadataFor('anonymous:AButton');
+    }
 
-        $metadata = $this->factory()->metadataFor('AButton');
-        $this->assertSame('components/anonymous/AButton.html.twig', $metadata->getTemplate());
+    public function testLoadingAnonymousComponentFromBundle(): void
+    {
+        $metadata = $this->factory()->metadataFor('Acme:Button');
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->factory()->metadataFor('foo:bar:baz');
+        $this->assertSame('@Acme/components/Button.html.twig', $metadata->getTemplate());
+        $this->assertSame('Acme:Button', $metadata->getName());
+        $this->assertNull($metadata->get('class'));
     }
 
     public function testAutoNamingInSubDirectory(): void

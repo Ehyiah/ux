@@ -19,10 +19,6 @@ Or watch the `Turbo Screencast on SymfonyCasts`_.
 Installation
 ------------
 
-.. caution::
-
-    Before you start, make sure you have `StimulusBundle configured in your app`_.
-
 Install the bundle using Composer and Symfony Flex:
 
 .. code-block:: terminal
@@ -37,9 +33,9 @@ needed if you're using AssetMapper):
     $ npm install --force
     $ npm run watch
 
-    # or use yarn
-    $ yarn install --force
-    $ yarn watch
+.. note::
+
+    For more complex installation scenarios, you can install the JavaScript assets through the `@symfony/ux-turbo npm package`_
 
 Usage
 -----
@@ -258,6 +254,44 @@ a Turbo Frame, and retrieve the ID of this frame::
         }
     }
 
+<twig:Turbo:Frame> Twig Component
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 2.22
+
+    The ``<twig:Turbo:Frame>`` Twig Component was added in Turbo 2.22.
+
+Simple example:
+
+.. code-block:: html+twig
+
+    <twig:Turbo:Frame id="the_frame_id" />
+
+    {# renders as: #}
+    <turbo-frame id="the_frame_id"></turbo-frame>
+
+With a HTML attribute:
+
+.. code-block:: html+twig
+
+    <twig:Turbo:Frame id="the_frame_id" loading="lazy" src="{{ path('block') }}" />
+
+    {# renders as: #}
+    <turbo-frame id="the_frame_id" loading="lazy" src="https://example.com/block"></turbo-frame>
+
+With content:
+
+.. code-block:: html+twig
+
+    <twig:Turbo:Frame id="the_frame_id" src="{{ path('block') }}">
+        A placeholder.
+    </twig:Turbo:Frame>
+
+    {# renders as: #}
+    <turbo-frame id="the_frame_id" src="https://example.com/block">
+        A placeholder.
+    </turbo-frame>
+
 Writing Tests
 ^^^^^^^^^^^^^
 
@@ -284,7 +318,7 @@ Symfony.
             $client->request('GET', '/');
 
             $client->clickLink('This block is scoped, the rest of the page will not change if you click here!');
-            $this->assertSelectorTextContains('body', 'This will replace the content of the Turbo Frame!');
+            $this->assertSelectorWillContain('body', 'This will replace the content of the Turbo Frame!');
         }
     }
 
@@ -311,11 +345,6 @@ clients. There are two main ways to receive the updates:
 
 Forms
 ^^^^^
-
-.. versionadded:: 2.1
-
-    Prior to 2.1, ``TurboStreamResponse::STREAM_FORMAT`` was used instead of ``TurboBundle::STREAM_FORMAT``.
-    Also, one had to return a new ``TurboStreamResponse()`` object as the third argument to ``$this->render()``.
 
 Let's discover how to use Turbo Streams to enhance your `Symfony forms`_::
 
@@ -353,7 +382,6 @@ Let's discover how to use Turbo Streams to enhance your `Symfony forms`_::
                 return $this->redirectToRoute('task_success', [], Response::HTTP_SEE_OTHER);
             }
 
-            // Symfony 6.2+
             return $this->render('task/new.html.twig', [
                 'form' => $form,
             ]);
@@ -364,18 +392,176 @@ Let's discover how to use Turbo Streams to enhance your `Symfony forms`_::
 
     {# bottom of new.html.twig #}
     {% block success_stream %}
-    <turbo-stream action="replace" targets="#my_div_id">
-        <template>
-            The element having the id "my_div_id" will be replaced by this block, without a full page reload!
+        <turbo-stream action="replace" targets="#my_div_id">
+            <template>
+                The element having the id "my_div_id" will be replaced by this block, without a full page reload!
 
-            <div>The task "{{ task }}" has been created!</div>
-        </template>
-    </turbo-stream>
+                <div>The task "{{ task }}" has been created!</div>
+            </template>
+        </turbo-stream>
     {% endblock %}
 
 Supported actions are ``append``, ``prepend``, ``replace``, ``update``,
-``remove``, ``before`` and ``after``.
+``remove``, ``before``, ``after`` and ``refresh``.
 `Read the Turbo Streams documentation for more details`_.
+
+Stream Messages and Actions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To render a ``<turbo-stream>`` element, this bundle provides a set of ``<twig:Turbo:Stream:*>`` Twig Components. These components make it easy to inject content directly into the ``<template>`` tag, pass attributes, and set the desired morphing mode with a clear and consistent syntax.
+
+Append
+""""""
+
+.. code-block:: html+twig
+
+    <twig:Turbo:Stream:Append target="#dom_id">
+        Content to append to container designated with the dom_id.
+    </twig:Turbo:Stream:Append>
+
+    {# renders as: #}
+    <turbo-stream action="append" targets="#dom_id">
+        <template>
+            Content to append to container designated with the dom_id.
+        </template>
+    </turbo-stream>
+
+Prepend
+"""""""
+
+.. code-block:: html+twig
+
+    <twig:Turbo:Stream:Prepend target="#dom_id">
+        Content to prepend to container designated with the dom_id.
+    </twig:Turbo:Stream:Prepend>
+
+    {# renders as: #}
+    <turbo-stream action="prepend" targets="#dom_id">
+        <template>
+            Content to prepend to container designated with the dom_id.
+        </template>
+    </turbo-stream>
+
+Replace
+"""""""
+
+.. code-block:: html+twig
+
+    <twig:Turbo:Stream:Replace target="#dom_id">
+        Content to replace the element designated with the dom_id.
+    </twig:Turbo:Stream:Replace>
+
+    {# renders as: #}
+    <turbo-stream action="replace" targets="#dom_id">
+        <template>
+            Content to replace the element designated with the dom_id.
+        </template>
+    </turbo-stream>
+
+.. code-block:: html+twig
+
+    {# with morphing #}
+    <twig:Turbo:Stream:Replace target="#dom_id" morph>
+        Content to replace the element.
+    </twig:Turbo:Stream:Replace>
+
+    {# renders as: #}
+    <turbo-stream action="replace" targets="#dom_id" method="morph">
+        <template>
+            Content to replace the element.
+        </template>
+    </turbo-stream>
+
+Update
+""""""
+
+.. code-block:: html+twig
+
+    <twig:Turbo:Stream:Update target="#dom_id">
+        Content to update to container designated with the dom_id.
+    </twig:Turbo:Stream:Update>
+
+    {# renders as: #}
+    <turbo-stream action="update" targets="#dom_id">
+        <template>
+            Content to update to container designated with the dom_id.
+        </template>
+    </turbo-stream>
+
+.. code-block:: html+twig
+
+    {# with morphing #}
+    <twig:Turbo:Stream:Update target="#dom_id" morph>
+        Content to replace the element.
+    </twig:Turbo:Stream:Update>
+
+    {# renders as: #}
+    <turbo-stream action="update" targets="#dom_id" method="morph">
+        <template>
+            Content to replace the element.
+        </template>
+    </turbo-stream>
+
+Remove
+""""""
+
+.. code-block:: html+twig
+
+    <twig:Turbo:Stream:Remove target="#dom_id" />
+
+    {# renders as: #}
+    <turbo-stream action="remove" targets="#dom_id"></turbo-stream>
+
+Before
+""""""
+
+.. code-block:: html+twig
+
+    <twig:Turbo:Stream:Before target="#dom_id">
+        Content to place before the element designated with the dom_id.
+    </twig:Turbo:Stream:Before>
+
+    {# renders as: #}
+    <turbo-stream action="before" targets="#dom_id">
+        <template>
+            Content to place before the element designated with the dom_id.
+        </template>
+    </turbo-stream>
+
+After
+"""""
+
+.. code-block:: html+twig
+
+    <twig:Turbo:Stream:After target="#dom_id">
+        Content to place after the element designated with the dom_id.
+    </twig:Turbo:Stream:After>
+
+    {# renders as: #}
+    <turbo-stream action="after" targets="#dom_id">
+        <template>
+            Content to place after the element designated with the dom_id.
+        </template>
+    </turbo-stream>
+
+Refresh
+"""""""
+
+.. code-block:: html+twig
+
+    {# without [request-id] #}
+    <twig:Turbo:Stream:Refresh />
+
+    {# renders as: #}
+    <turbo-stream action="refresh"></turbo-stream>
+
+.. code-block:: html+twig
+
+    {# debounced with [request-id] #}
+    <twig:Turbo:Stream:Refresh requestId="abcd-1234" />
+
+    {# renders as: #}
+    <turbo-stream action="refresh" request-id="abcd-1234"></turbo-stream>
 
 Resetting the Form
 ~~~~~~~~~~~~~~~~~~
@@ -470,7 +656,7 @@ Then, enable the "mercure stream" controller in ``assets/controllers.json``:
         "mercure-turbo-stream": {
     +         "enabled": true,
     -         "enabled": false,
-            "fetch": "lazy"
+            "fetch": "eager"
         }
     },
 
@@ -482,14 +668,19 @@ If you use Symfony Flex, the configuration has been generated for you,
 be sure to update the ``MERCURE_URL`` in the ``.env`` file to point to a
 Mercure Hub (it's not necessary if you are using Symfony Docker).
 
-Otherwise, configure Mercure Hub(s) to use:
+Otherwise, configure Mercure Hub(s) as explained in the documentation:
 
 .. code-block:: yaml
 
-    # config/packages/turbo.yaml
-    turbo:
-        mercure:
-            hubs: [default]
+    # config/packages/mercure.yaml
+    mercure:
+        hubs:
+            default:
+                url: '%env(MERCURE_URL)%'
+                public_url: '%env(MERCURE_PUBLIC_URL)%'
+                jwt:
+                    secret: '%env(MERCURE_JWT_SECRET)%'
+                    publish: '*'
 
 Let's create our chat::
 
@@ -562,6 +753,9 @@ Let's create our chat::
             #}
         </turbo-frame>
     {% endblock %}
+
+If you're using a private hub, you can add ``{ withCredentials: true }``
+as ``turbo_stream_listen()`` third argument to authenticate with the hub
 
 .. code-block:: html+twig
 
@@ -707,7 +901,7 @@ The ``Broadcast`` attribute comes with a set of handy options:
 -  ``template`` (``string``): Twig template to render (see above)
 
 The ``Broadcast`` attribute can be repeated (e.g. you can have multiple
-`#[Broadcast]`. This is convenient to render several templates associated with
+``#[Broadcast]``. This is convenient to render several templates associated with
 their own topics for the same change (e.g. the same data is rendered in different
 way in the list and in the detail pages).
 
@@ -720,7 +914,7 @@ are supported:
 -  ``sse_retry`` (``int``): ``retry`` field of the SSE
 
 The Mercure broadcaster also supports `Expression Language`_ in topics
-by starting with `@=`.
+by starting with ``@=``.
 
 Example::
 
@@ -729,8 +923,8 @@ Example::
 
     use Symfony\UX\Turbo\Attribute\Broadcast;
 
-    #[Broadcast(topics: ['@="book_detail" ~ entity.id', 'books'], template: 'book_detail.stream.html.twig', private: true)]
-    #[Broadcast(topics: ['@="book_list" ~ entity.id', 'books'], template: 'book_list.stream.html.twig', private: true)]
+    #[Broadcast(topics: ['@="book_detail" ~ entity.getId()', 'books'], template: 'book_detail.stream.html.twig', private: true)]
+    #[Broadcast(topics: ['@="book_list" ~ entity.getId()', 'books'], template: 'book_list.stream.html.twig', private: true)]
     class Book
     {
         // ...
@@ -754,13 +948,6 @@ the following configuration:
             hub2:
                 url: https://hub2.example.net/.well-known/mercure
                 jwt: snip
-
-.. code-block:: yaml
-
-    # config/packages/turbo.yaml
-    turbo:
-        mercure:
-            hubs: [hub1, hub2]
 
 Use the appropriate Mercure ``HubInterface`` service to send a change
 using a specific transport::
@@ -824,7 +1011,7 @@ transports::
     {
         public function broadcast(object $entity, string $action): void
         {
-            // This method will be called everytime an object marked with the #[Broadcast] attribute is changed
+            // This method will be called every time an object marked with the #[Broadcast] attribute is changed
             $attribute = (new \ReflectionClass($entity))->getAttributes(Broadcast::class)[0] ?? null;
             // ...
         }
@@ -866,6 +1053,74 @@ because these classes implement the ``BroadcasterInterface`` and
 ``TurboStreamListenRendererInterface`` interfaces, the related services
 will be.
 
+Meta Tags
+~~~~~~~~~
+
+turbo_exempts_page_from_cache
+.............................
+
+.. code-block:: twig
+
+    {{ turbo_exempts_page_from_cache() }}
+
+Generates a <meta> tag to disable caching of a page.
+
+turbo_exempts_page_from_preview
+...............................
+
+.. code-block:: twig
+
+    {{ turbo_exempts_page_from_preview() }}
+
+Generates a <meta> tag to specify cached version of the page should not be shown as a preview on regular navigation visits.
+
+turbo_page_requires_reload
+..........................
+
+.. code-block:: twig
+
+    {{ turbo_page_requires_reload() }}
+
+Generates a <meta> tag to force a full page reload.
+
+turbo_refreshes_with
+....................
+
+.. code-block:: twig
+
+    {{ turbo_refreshes_with(method: 'replace', scroll: 'reset') }}
+
+``method`` *(optional)*
+    **type**: ``string`` **default**: ``replace`` **allowed values**: ``replace`` or ``morph``
+``scroll`` *(optional)*
+    **type**: ``string`` **default**: ``reset`` **allowed values**: ``reset`` or ``preserve``
+
+Generates <meta> tags to configure both the refresh method and scroll behavior for page refreshes.
+
+turbo_refresh_method
+....................
+
+.. code-block:: twig
+
+    {{ turbo_refresh_method(method: 'replace') }}
+
+``method`` *(optional)*
+    **type**: ``string`` **default**: ``replace`` **allowed values**: ``replace`` or ``morph``
+
+Generates a <meta> tag to configure the refresh method for page refreshes.
+
+turbo_refresh_scroll
+....................
+
+.. code-block:: twig
+
+    {{ turbo_refresh_scroll(scroll: 'reset') }}
+
+``scroll`` *(optional)*
+    **type**: ``string`` **default**: ``reset`` **allowed values**: ``reset`` or ``preserve``
+
+Generates a <meta> tag to configure the scroll behavior for page refreshes.
+
 Backward Compatibility promise
 ------------------------------
 
@@ -880,7 +1135,7 @@ Symfony UX Turbo has been created by `Kévin Dunglas`_. It has been inspired by
 `hotwired/turbo-rails`_ and `sroze/live-twig`_.
 
 .. _`Hotwire Turbo`: https://turbo.hotwired.dev
-.. _`the Symfony UX initiative`: https://symfony.com/ux
+.. _`the Symfony UX initiative`: https://ux.symfony.com/
 .. _`Single Page Applications`: https://en.wikipedia.org/wiki/Single-page_application
 .. _`Symfony Mercure`: https://symfony.com/doc/current/mercure.html
 .. _`Turbo Screencast on SymfonyCasts`: https://symfonycasts.com/screencast/turbo
@@ -904,6 +1159,6 @@ Symfony UX Turbo has been created by `Kévin Dunglas`_. It has been inspired by
 .. _`Kévin Dunglas`: https://dunglas.fr
 .. _`hotwired/turbo-rails`: https://github.com/hotwired/turbo-rails
 .. _`sroze/live-twig`: https://github.com/sroze/live-twig
-.. _StimulusBundle configured in your app: https://symfony.com/bundles/StimulusBundle/current/index.html
 .. _`Moving <script> inside <head> and the "defer" Attribute`: https://symfony.com/blog/moving-script-inside-head-and-the-defer-attribute
 .. _`Expression Language`: https://symfony.com/doc/current/components/expression_language.html
+.. _`@symfony/ux-turbo npm package`: https://www.npmjs.com/package/@symfony/ux-turbo

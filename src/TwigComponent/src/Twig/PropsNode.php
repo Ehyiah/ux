@@ -23,9 +23,9 @@ use Twig\Node\Node;
 #[YieldReady]
 class PropsNode extends Node
 {
-    public function __construct(array $propsNames, array $values, $lineno = 0, ?string $tag = null)
+    public function __construct(array $propsNames, array $values, $lineno = 0)
     {
-        parent::__construct($values, ['names' => $propsNames], $lineno, $tag);
+        parent::__construct($values, ['names' => $propsNames], $lineno);
     }
 
     public function compile(Compiler $compiler): void
@@ -34,6 +34,10 @@ class PropsNode extends Node
             ->addDebugInfo($this)
             ->write('$propsNames = [];')
         ;
+
+        if (!$this->getAttribute('names')) {
+            return;
+        }
 
         foreach ($this->getAttribute('names') as $name) {
             $compiler
@@ -57,7 +61,7 @@ class PropsNode extends Node
             if (!$this->hasNode($name)) {
                 $compiler
                     ->indent()
-                    ->write('throw new \Twig\Error\RuntimeError("'.$name.' should be defined for component '.$this->getTemplateName().'");')
+                    ->write('throw new \Twig\Error\RuntimeError("'.$name.' should be defined for component '.$this->getTemplateName().'.");')
                     ->write("\n")
                     ->outdent()
                     ->write('}')
@@ -73,7 +77,23 @@ class PropsNode extends Node
                 ->raw(";\n")
                 ->outdent()
                 ->write('}')
-                ->write("\n");
+                ->write("\n")
+            ;
+
+            // overwrite the context value if a props with a similar name and a default value exist
+            if ($this->hasNode($name)) {
+                $compiler
+                    ->write('if (isset($context[\'__context\'][\''.$name.'\'])) {')
+                    ->raw("\n")
+                    ->indent()
+                    ->write('$context[\''.$name.'\'] = ')
+                    ->subcompile($this->getNode($name))
+                    ->raw(";\n")
+                    ->outdent()
+                    ->write('}')
+                    ->raw("\n")
+                ;
+            }
         }
 
         $compiler
@@ -94,25 +114,5 @@ class PropsNode extends Node
             ->write('}')
             ->raw("\n")
         ;
-
-        // overwrite the context value if a props with a similar name and a default value exist
-        if ($this->hasNode($name)) {
-            $compiler
-                ->write('if (isset($context[\'__context\'][\''.$name.'\'])) {')
-                ->raw("\n")
-                ->write('$contextValue = $context[\'__context\'][\''.$name.'\'];')
-                ->raw("\n")
-                ->write('$propsValue = $context[\''.$name.'\'];')
-                ->raw("\n")
-                ->write('if ($contextValue === $propsValue) {')
-                ->raw("\n")
-                ->write('$context[\''.$name.'\'] = ')
-                ->subcompile($this->getNode($name))
-                ->raw(";\n")
-                ->write('}')
-                ->raw("\n")
-                ->write('}')
-            ;
-        }
     }
 }

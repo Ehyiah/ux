@@ -18,10 +18,6 @@ Installation
     This package works best with WebpackEncore. To use it with AssetMapper, see
     :ref:`Using with AssetMapper <using-with-asset-mapper>`.
 
-.. caution::
-
-    Before you start, make sure you have `StimulusBundle configured in your app`_.
-
 Install the bundle using Composer and Symfony Flex:
 
 .. code-block:: terminal
@@ -31,9 +27,9 @@ Install the bundle using Composer and Symfony Flex:
     $ npm install --force
     $ npm run watch
 
-    # or use yarn
-    $ yarn install --force
-    $ yarn watch
+.. note::
+
+    For more complex installation scenarios, you can install the JavaScript assets through the `@symfony/ux-svelte npm package`_
 
 The Flex recipe will automatically set things up for you, like adding
 ``.enableSvelte()`` to your ``webpack.config.js`` file and adding code
@@ -44,9 +40,6 @@ Next, install a package to help Svelte:
 .. code-block:: terminal
 
     $ npm install svelte-loader --save-dev
-
-    # or use yarn
-    $ yarn add svelte-loader --dev
 
 That's it! Any files inside ``assets/svelte/controllers/`` can now be rendered as
 Svelte components.
@@ -132,7 +125,7 @@ AssetMapper requires some extra steps.
 
 #. Compile your ``.svelte`` files to pure JavaScript files. This can be done by
    using the ``svelte/compiler`` library, but is a bit of a non-standard process.
-   For an example, see https://github.com/symfony/ux/blob/2.x/ux.symfony.com/bin/compile_svelte.js.
+   For an example, see https://github.com/symfony/ux/blob/2.x/ux.symfony.com/assets/svelte/build/build.js.
 
 #. Point this library at the "built" controllers directory that contains the final
    JavaScript files:
@@ -159,6 +152,6 @@ the Symfony framework:
 https://symfony.com/doc/current/contributing/code/bc.html
 
 .. _`Svelte`: https://svelte.dev/
-.. _`the Symfony UX initiative`: https://symfony.com/ux
-.. _StimulusBundle configured in your app: https://symfony.com/bundles/StimulusBundle/current/index.html
+.. _`the Symfony UX initiative`: https://ux.symfony.com/
 .. _the Svelte 4 migration guide: https://svelte.dev/docs/v4-migration-guide#browser-conditions-for-bundlers
+.. _`@symfony/ux-svelte npm package`: https://www.npmjs.com/package/@symfony/ux-svelte

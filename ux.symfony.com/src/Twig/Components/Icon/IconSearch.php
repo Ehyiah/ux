@@ -18,7 +18,6 @@ use App\Service\Icon\IconSetRepository;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
-use Symfony\UX\TwigComponent\Attribute\PostMount;
 
 #[AsLiveComponent('Icon:IconSearch')]
 class IconSearch
@@ -39,11 +38,6 @@ class IconSearch
         private readonly Iconify $iconify,
         private readonly IconSetRepository $iconSetRepository,
     ) {
-    }
-
-    #[PostMount]
-    public function postMount(): void
-    {
     }
 
     public function getIconSetOptionGroups(): array
@@ -75,6 +69,11 @@ class IconSearch
     public function icons(): array
     {
         return $this->icons ??= $this->searchIcons();
+    }
+
+    public function getIconSet(): ?IconSet
+    {
+        return $this->set ? $this->iconSetRepository->get($this->set) : null;
     }
 
     private function searchIcons(): array

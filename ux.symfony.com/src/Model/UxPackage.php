@@ -24,9 +24,12 @@ class UxPackage
         private string $route,
         private string $color,
         private string $gradient,
+        private string $tagLine,
         private string $description,
-        private string $createString,
+        private ?string $createString = null,
         private ?string $imageFileName = null,
+        private ?string $composerName = null,
+        private bool $isDevDependency = false,
     ) {
     }
 
@@ -55,9 +58,14 @@ class UxPackage
         return $this->gradient;
     }
 
-    public function getImageFilename(): string
+    public function getImageFilename(?string $format = null): string
     {
-        return $this->imageFileName ?? ltrim($this->name, 'ux-').'.png';
+        return $this->imageFileName ?? $this->name.($format ? '-'.$format : '').'.png';
+    }
+
+    public function getTagLine(): string
+    {
+        return $this->tagLine;
     }
 
     public function getDescription(): string
@@ -67,11 +75,15 @@ class UxPackage
 
     public function getComposerName(): string
     {
-        return 'symfony/ux-'.$this->getName();
+        return $this->composerName ?? 'symfony/ux-'.$this->getName();
     }
 
     public function getComposerRequireCommand(): string
     {
+        if ($this->isDevDependency) {
+            return 'composer require --dev '.$this->getComposerName();
+        }
+
         return 'composer require '.$this->getComposerName();
     }
 
@@ -111,13 +123,32 @@ class UxPackage
         return $this->screencastLinkText;
     }
 
-    public function getOfficialDocsUrl(): string
+    public function setOfficialDocsUrl(string $officialDocsUrl): self
     {
-        return sprintf('https://symfony.com/bundles/ux-%s/current/index.html', $this->name);
+        $this->officialDocsUrl = $officialDocsUrl;
+
+        return $this;
     }
 
-    public function getCreateString(): string
+    private string $officialDocsUrl;
+
+    public function getOfficialDocsUrl(): string
+    {
+        return $this->officialDocsUrl ??= \sprintf('https://symfony.com/bundles/ux-%s/current/index.html', $this->name);
+    }
+
+    public function getCreateString(): ?string
     {
         return $this->createString;
+    }
+
+    public function getSocialImage(?string $format = null): string
+    {
+        return 'images/ux_packages/'.$this->name.($format ? ('-'.$format) : '').'.png';
+    }
+
+    public function getImage(?string $format = null): string
+    {
+        return 'images/ux_packages/'.$this->getImageFilename($format);
     }
 }

@@ -29,9 +29,9 @@ final class Broadcast
     public const ACTION_REMOVE = 'remove';
 
     /**
-     * @var mixed[]
+     * @var array<mixed>
      */
-    public $options;
+    public array $options;
 
     /**
      * Options can be any option supported by the broadcaster.
@@ -42,6 +42,7 @@ final class Broadcast
      */
     public function __construct(...$options)
     {
+        // @phpstan-ignore function.alreadyNarrowedType
         if ([0] === array_keys($options) && \is_array($options[0]) && \is_string(key($options[0]))) {
             $options = $options[0];
         }

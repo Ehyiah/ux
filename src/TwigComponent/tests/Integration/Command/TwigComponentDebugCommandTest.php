@@ -41,6 +41,15 @@ class TwigComponentDebugCommandTest extends KernelTestCase
         $this->assertStringContainsString('Unknown component "NoMatchComponent".', $commandTester->getDisplay());
     }
 
+    public function testNotComponentsIsNotListed(): void
+    {
+        $commandTester = $this->createCommandTester();
+        $result = $commandTester->execute(['name' => 'NotAComponent']);
+
+        $this->assertEquals(1, $result);
+        $this->assertStringContainsString('Unknown component "NotAComponent".', $commandTester->getDisplay());
+    }
+
     public function testWithOnePartialMatchComponent(): void
     {
         $commandTester = $this->createCommandTester();
@@ -139,6 +148,36 @@ class TwigComponentDebugCommandTest extends KernelTestCase
         $this->assertStringContainsString('components/Button.html.twig', $display);
         $this->assertStringContainsString('label', $display);
         $this->assertStringContainsString('primary = true', $display);
+    }
+
+    public function testWithBundleAnonymousComponent(): void
+    {
+        $commandTester = $this->createCommandTester();
+        $commandTester->execute(['name' => 'Acme:Button']);
+
+        $commandTester->assertCommandIsSuccessful();
+
+        $display = $commandTester->getDisplay();
+
+        $this->tableDisplayCheck($display);
+        $this->assertStringContainsString('Acme:Button', $display);
+        $this->assertStringContainsString('@Acme/components/Button.html.twig', $display);
+        $this->assertStringContainsString('Anonymous', $display);
+    }
+
+    public function testWithBundleAnonymousComponentSubDir(): void
+    {
+        $commandTester = $this->createCommandTester();
+        $commandTester->execute(['name' => 'Acme:Table:Header']);
+
+        $commandTester->assertCommandIsSuccessful();
+
+        $display = $commandTester->getDisplay();
+
+        $this->tableDisplayCheck($display);
+        $this->assertStringContainsString('Acme:Table:Header', $display);
+        $this->assertStringContainsString('@Acme/components/Table/Header.html.twig', $display);
+        $this->assertStringContainsString('Anonymous', $display);
     }
 
     public function testWithoutPublicProps(): void

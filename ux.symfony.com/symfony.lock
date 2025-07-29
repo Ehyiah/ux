@@ -1,7 +1,4 @@
 {
-    "babdev/pagerfanta-bundle": {
-        "version": "v3.7.0"
-    },
     "behat/mink": {
         "version": "v1.10.0"
     },
@@ -109,12 +106,6 @@
     },
     "nikic/php-parser": {
         "version": "v4.14.0"
-    },
-    "pagerfanta/core": {
-        "version": "v3.6.1"
-    },
-    "pagerfanta/twig": {
-        "version": "v3.6.1"
     },
     "phar-io/manifest": {
         "version": "2.0.3"
@@ -557,8 +548,29 @@
     "symfony/ux-dropzone": {
         "version": "v2.1.1"
     },
+    "symfony/ux-icons": {
+        "version": "2.17",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "2.17",
+            "ref": "803a3bbd5893f9584969ab8670290cdfb6a0a5b5"
+        },
+        "files": [
+            "assets/icons/symfony.svg"
+        ]
+    },
     "symfony/ux-lazy-image": {
         "version": "v2.1.1"
+    },
+    "symfony/ux-leaflet-map": {
+        "version": "2.19",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "2.19",
+            "ref": "e696e4124071004125072f3b582a2b7e43ad58c1"
+        }
     },
     "symfony/ux-live-component": {
         "version": "2.9999999",
@@ -570,6 +582,18 @@
         },
         "files": [
             "config/routes/ux_live_component.yaml"
+        ]
+    },
+    "symfony/ux-map": {
+        "version": "2.19",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "2.19",
+            "ref": "04de870967555f00bd82f542e9e2d29683c3d39e"
+        },
+        "files": [
+            "config/packages/ux_map.yaml"
         ]
     },
     "symfony/ux-notify": {
@@ -585,6 +609,9 @@
         "version": "v2.1.1"
     },
     "symfony/ux-toggle-password": {
+        "version": "2.x-dev"
+    },
+    "symfony/ux-toolkit": {
         "version": "2.x-dev"
     },
     "symfony/ux-translator": {
@@ -654,6 +681,27 @@
     "symfonycasts/sass-bundle": {
         "version": "v0.1.0"
     },
+    "symfonycasts/tailwind-bundle": {
+        "version": "0.9",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "0.8",
+            "ref": "4ea7c9488fdce8943520daf3fdc31e93e5b59c64"
+        },
+        "files": [
+            "config/packages/symfonycasts_tailwind.yaml"
+        ]
+    },
+    "tales-from-a-dev/twig-tailwind-extra": {
+        "version": "0.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "0.2",
+            "ref": "7243ab070ed66198eb82c026684e9b9773e7b64a"
+        }
+    },
     "theseer/tokenizer": {
         "version": "1.2.1"
     },
@@ -665,6 +713,15 @@
     },
     "twig/twig": {
         "version": "v3.3.10"
+    },
+    "vincentlanglet/twig-cs-fixer": {
+        "version": "2.8",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "0.6",
+            "ref": "e4da12a48e8138479bd24a675321bcfd84950266"
+        }
     },
     "zenstruck/assert": {
         "version": "v1.0.1"

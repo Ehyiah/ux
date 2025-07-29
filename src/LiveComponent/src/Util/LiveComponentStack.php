@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * This file is part of the Symfony package.
  *
@@ -26,6 +24,9 @@ use Symfony\UX\TwigComponent\MountedComponent;
  */
 final class LiveComponentStack extends ComponentStack
 {
+    /** @var array<class-string, bool> */
+    private array $cacheLiveComponents = [];
+
     public function __construct(private readonly ComponentStack $componentStack)
     {
     }
@@ -33,7 +34,8 @@ final class LiveComponentStack extends ComponentStack
     public function getCurrentLiveComponent(): ?MountedComponent
     {
         foreach ($this->componentStack as $mountedComponent) {
-            if ($this->isLiveComponent($mountedComponent->getComponent()::class)) {
+            $componentClass = $mountedComponent->getComponent()::class;
+            if ($this->cacheLiveComponents[$componentClass] ??= $this->isLiveComponent($componentClass)) {
                 return $mountedComponent;
             }
         }

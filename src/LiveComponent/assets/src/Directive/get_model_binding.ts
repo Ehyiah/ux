@@ -1,26 +1,38 @@
-import {Directive} from './directives_parser';
+import type { Directive } from './directives_parser';
 
 export interface ModelBinding {
-    modelName: string,
-    innerModelName: string|null,
-    shouldRender: boolean,
-    debounce: number|boolean,
-    targetEventName: string|null
+    modelName: string;
+    innerModelName: string | null;
+    shouldRender: boolean;
+    debounce: number | boolean;
+    targetEventName: string | null;
+    minLength: number | null;
+    maxLength: number | null;
+    minValue: number | null;
+    maxValue: number | null;
 }
 
-export default function(modelDirective: Directive): ModelBinding {
+export default function (modelDirective: Directive): ModelBinding {
     let shouldRender = true;
     let targetEventName = null;
-    let debounce: number|boolean = false;
+    let debounce: number | boolean = false;
+    let minLength: number | null = null;
+    let maxLength: number | null = null;
+    let minValue: number | null = null;
+    let maxValue: number | null = null;
 
     modelDirective.modifiers.forEach((modifier) => {
         switch (modifier.name) {
             case 'on':
                 if (!modifier.value) {
-                    throw new Error(`The "on" modifier in ${modelDirective.getString()} requires a value - e.g. on(change).`);
+                    throw new Error(
+                        `The "on" modifier in ${modelDirective.getString()} requires a value - e.g. on(change).`
+                    );
                 }
                 if (!['input', 'change'].includes(modifier.value)) {
-                    throw new Error(`The "on" modifier in ${modelDirective.getString()} only accepts the arguments "input" or "change".`);
+                    throw new Error(
+                        `The "on" modifier in ${modelDirective.getString()} only accepts the arguments "input" or "change".`
+                    );
                 }
 
                 targetEventName = modifier.value;
@@ -32,7 +44,27 @@ export default function(modelDirective: Directive): ModelBinding {
                 break;
 
             case 'debounce':
-                debounce = modifier.value ? parseInt(modifier.value) : true;
+                debounce = modifier.value ? Number.parseInt(modifier.value) : true;
+
+                break;
+
+            case 'min_length':
+                minLength = modifier.value ? Number.parseInt(modifier.value) : null;
+
+                break;
+
+            case 'max_length':
+                maxLength = modifier.value ? Number.parseInt(modifier.value) : null;
+
+                break;
+
+            case 'min_value':
+                minValue = modifier.value ? Number.parseFloat(modifier.value) : null;
+
+                break;
+
+            case 'max_value':
+                maxValue = modifier.value ? Number.parseFloat(modifier.value) : null;
 
                 break;
             default:
@@ -40,13 +72,17 @@ export default function(modelDirective: Directive): ModelBinding {
         }
     });
 
-    const [ modelName, innerModelName ] = modelDirective.action.split(':');
+    const [modelName, innerModelName] = modelDirective.action.split(':');
 
     return {
         modelName,
         innerModelName: innerModelName || null,
         shouldRender,
         debounce,
-        targetEventName
-    }
+        targetEventName,
+        minLength,
+        maxLength,
+        minValue,
+        maxValue,
+    };
 }

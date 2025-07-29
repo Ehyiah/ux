@@ -1,13 +1,9 @@
-import Component from '../src/Component';
-import {
-    registerComponent,
-    resetRegistry,
-    getComponent,
-    findComponents,
-} from '../src/ComponentRegistry';
-import BackendRequest from '../src/Backend/BackendRequest';
-import { BackendInterface } from '../src/Backend/Backend';
 import { Response } from 'node-fetch';
+import { beforeEach, describe, expect, it } from 'vitest';
+import type { BackendInterface } from '../src/Backend/Backend';
+import BackendRequest from '../src/Backend/BackendRequest';
+import Component from '../src/Component';
+import { findComponents, getComponent, registerComponent, resetRegistry } from '../src/ComponentRegistry';
 import { noopElementDriver } from './tools';
 
 const createComponent = (element: HTMLElement, name = 'foo-component'): Component => {
@@ -18,19 +14,11 @@ const createComponent = (element: HTMLElement, name = 'foo-component'): Componen
                 new Promise((resolve) => resolve(new Response(''))),
                 [],
                 []
-            )
-        }
-    }
+            );
+        },
+    };
 
-    return new Component(
-        element,
-        name,
-        {},
-        [],
-        null,
-        backend,
-        new noopElementDriver(),
-    );
+    return new Component(element, name, {}, [], null, backend, new noopElementDriver());
 };
 
 describe('ComponentRegistry', () => {

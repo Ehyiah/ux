@@ -1,6 +1,9 @@
+vendor/
+node_modules
+
 .doctor-rst.cache
 .php-cs-fixer.cache
-node_modules
-yarn-error.log
+.phpunit.result.cache
+
 /composer.lock
 /vendor

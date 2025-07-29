@@ -13,6 +13,7 @@ namespace Symfony\UX\Autocomplete\Form;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\ChoiceList\Loader\LazyChoiceLoader;
 use Symfony\Component\Form\Exception\RuntimeException;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\Options;
@@ -38,6 +39,14 @@ final class BaseEntityAutocompleteType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $choiceLoader = static function (Options $options, $loader) {
+            if (null === $loader) {
+                return null;
+            }
+
+            if (class_exists(LazyChoiceLoader::class)) {
+                return new LazyChoiceLoader($loader);
+            }
+
             return new ExtraLazyChoiceLoader($loader);
         };
 
@@ -94,7 +103,7 @@ final class BaseEntityAutocompleteType extends AbstractType
         $attribute = AsEntityAutocompleteField::getInstance($formType::class);
 
         if (!$attribute) {
-            throw new \LogicException(sprintf('You must either provide your own autocomplete_url, or add #[AsEntityAutocompleteField] attribute to %s.', $formType::class));
+            throw new \LogicException(\sprintf('You must either provide your own autocomplete_url, or add #[AsEntityAutocompleteField] attribute to "%s".', $formType::class));
         }
 
         return $this->urlGenerator->generate($attribute->getRoute(), [

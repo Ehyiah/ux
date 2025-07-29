@@ -21,6 +21,8 @@ use Symfony\UX\TwigComponent\ComponentMetadata;
 use Symfony\UX\TwigComponent\ComponentStack;
 use Symfony\UX\TwigComponent\Event\PreRenderEvent;
 use Symfony\UX\TwigComponent\MountedComponent;
+use Twig\Environment;
+use Twig\Runtime\EscaperRuntime;
 
 /**
  * Adds the extra attributes needed to activate a live controller.
@@ -36,6 +38,7 @@ final class AddLiveAttributesSubscriber implements EventSubscriberInterface, Ser
     public function __construct(
         private ComponentStack $componentStack,
         private TemplateMap $templateMap,
+        private readonly Environment $twig,
         private ContainerInterface $container,
     ) {
     }
@@ -105,6 +108,6 @@ final class AddLiveAttributesSubscriber implements EventSubscriberInterface, Ser
             $this->componentStack->hasParentComponent()
         );
 
-        return new ComponentAttributes($attributesCollection->toEscapedArray());
+        return new ComponentAttributes($attributesCollection->toArray(), $this->twig->getRuntime(EscaperRuntime::class));
     }
 }

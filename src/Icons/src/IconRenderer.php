@@ -16,11 +16,18 @@ namespace Symfony\UX\Icons;
  *
  * @internal
  */
-final class IconRenderer
+final class IconRenderer implements IconRendererInterface
 {
+    /**
+     * @param array<string, mixed>                $defaultIconAttributes
+     * @param array<string, string>               $iconAliases
+     * @param array<string, array<string, mixed>> $iconSetsAttributes
+     */
     public function __construct(
         private readonly IconRegistryInterface $registry,
         private readonly array $defaultIconAttributes = [],
+        private readonly array $iconAliases = [],
+        private readonly array $iconSetsAttributes = [],
     ) {
     }
 
@@ -32,26 +39,44 @@ final class IconRenderer
      *
      * Precedence order:
      *   Icon file < Renderer configuration < Renderer invocation
-     *
-     * @param array<string,string|bool> $attributes
      */
     public function renderIcon(string $name, array $attributes = []): string
     {
-        return $this->registry->get($name)
-            ->withAttributes($this->getIconAttributes($name, $attributes))
-            ->toHtml()
-        ;
-    }
+        $iconName = $this->iconAliases[$name] ?? $name;
 
-    private function getIconAttributes(string $name, array $attributes): array
-    {
-        $iconAttributes = $this->defaultIconAttributes;
+        $icon = $this->registry->get($iconName);
 
-        // Add aria-hidden attribute
-        if ([] === array_intersect(['aria-hidden',  'aria-label', 'aria-labelledby', 'title'], array_keys($attributes))) {
-            $iconAttributes['aria-hidden'] = 'true';
+        if (0 < (int) $pos = strpos($name, ':')) {
+            $setAttributes = $this->iconSetsAttributes[substr($name, 0, $pos)] ?? [];
+        } elseif ($iconName !== $name && 0 < (int) $pos = strpos($iconName, ':')) {
+            $setAttributes = $this->iconSetsAttributes[substr($iconName, 0, $pos)] ?? [];
+        }
+        $icon = $icon->withAttributes([...$this->defaultIconAttributes, ...($setAttributes ?? []), ...$attributes]);
+
+        foreach ($this->getPreRenderers() as $preRenderer) {
+            $icon = $preRenderer($icon);
         }
 
-        return [...$iconAttributes, ...$attributes];
+        return $icon->toHtml();
+    }
+
+    /**
+     * @return iterable<callable(Icon): Icon>
+     */
+    private function getPreRenderers(): iterable
+    {
+        yield self::setAriaHidden(...);
+    }
+
+    /**
+     * Set `aria-hidden=true` if not defined & no textual alternative provided.
+     */
+    private static function setAriaHidden(Icon $icon): Icon
+    {
+        if ([] === array_intersect(['aria-hidden', 'aria-label', 'aria-labelledby', 'title'], array_keys($icon->getAttributes()))) {
+            return $icon->withAttributes(['aria-hidden' => 'true']);
+        }
+
+        return $icon;
     }
 }

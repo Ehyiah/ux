@@ -19,7 +19,7 @@ use Zenstruck\Browser\Test\HasBrowser;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
 
-use function Zenstruck\Foundry\create;
+use function Zenstruck\Foundry\Persistence\persist;
 
 class LiveComponentDemosTest extends KernelTestCase
 {
@@ -32,7 +32,7 @@ class LiveComponentDemosTest extends KernelTestCase
      */
     public function setupEntities(): void
     {
-        create(Food::class, ['name' => 'Pizza', 'votes' => 10]);
+        persist(Food::class, ['name' => 'Pizza', 'votes' => 10]);
     }
 
     /**
@@ -50,7 +50,7 @@ class LiveComponentDemosTest extends KernelTestCase
         ;
     }
 
-    public function getSmokeTests(): \Generator
+    public static function getSmokeTests(): \Generator
     {
         $demoRepository = new LiveDemoRepository();
         foreach ($demoRepository->findAll() as $demo) {

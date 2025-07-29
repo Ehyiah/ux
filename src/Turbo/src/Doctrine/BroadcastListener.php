@@ -27,9 +27,6 @@ use Symfony\UX\Turbo\Broadcaster\BroadcasterInterface;
  */
 final class BroadcastListener implements ResetInterface
 {
-    private $broadcaster;
-    private $annotationReader;
-
     /**
      * @var array<class-string, array<mixed>>
      */
@@ -48,12 +45,11 @@ final class BroadcastListener implements ResetInterface
      */
     private $removedEntities;
 
-    public function __construct(BroadcasterInterface $broadcaster, ?Reader $annotationReader = null)
-    {
+    public function __construct(
+        private BroadcasterInterface $broadcaster,
+        private ?Reader $annotationReader = null,
+    ) {
         $this->reset();
-
-        $this->broadcaster = $broadcaster;
-        $this->annotationReader = $annotationReader;
     }
 
     /**
@@ -65,6 +61,7 @@ final class BroadcastListener implements ResetInterface
             return;
         }
 
+        // @phpstan-ignore function.alreadyNarrowedType, method.notFound (`getEntityManager()` has been removed in Doctrine 3.0)
         $em = method_exists($eventArgs, 'getObjectManager') ? $eventArgs->getObjectManager() : $eventArgs->getEntityManager();
         $uow = $em->getUnitOfWork();
         foreach ($uow->getScheduledEntityInsertions() as $entity) {
@@ -89,6 +86,7 @@ final class BroadcastListener implements ResetInterface
             return;
         }
 
+        // @phpstan-ignore function.alreadyNarrowedType, method.notFound (`getEntityManager()` has been removed in Doctrine 3.0)
         $em = method_exists($eventArgs, 'getObjectManager') ? $eventArgs->getObjectManager() : $eventArgs->getEntityManager();
 
         try {
@@ -130,13 +128,13 @@ final class BroadcastListener implements ResetInterface
 
         if (!isset($this->broadcastedClasses[$class])) {
             $this->broadcastedClasses[$class] = [];
-            $r = null;
+            $r = new \ReflectionClass($class);
 
-            if ($options = ($r = new \ReflectionClass($class))->getAttributes(Broadcast::class)) {
+            if ($options = $r->getAttributes(Broadcast::class)) {
                 foreach ($options as $option) {
                     $this->broadcastedClasses[$class][] = $option->newInstance()->options;
                 }
-            } elseif ($this->annotationReader && $options = $this->annotationReader->getClassAnnotations($r ?? new \ReflectionClass($class))) {
+            } elseif ($this->annotationReader && $options = $this->annotationReader->getClassAnnotations($r)) {
                 foreach ($options as $option) {
                     if ($option instanceof Broadcast) {
                         $this->broadcastedClasses[$class][] = $option->options;

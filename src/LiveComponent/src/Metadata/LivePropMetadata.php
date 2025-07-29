@@ -11,7 +11,7 @@
 
 namespace Symfony\UX\LiveComponent\Metadata;
 
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\Type;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 
 /**
@@ -24,10 +24,7 @@ final class LivePropMetadata
     public function __construct(
         private string $name,
         private LiveProp $liveProp,
-        private ?string $typeName,
-        private bool $isBuiltIn,
-        private bool $allowsNull,
-        private ?Type $collectionValueType,
+        private ?Type $type,
     ) {
     }
 
@@ -36,19 +33,9 @@ final class LivePropMetadata
         return $this->name;
     }
 
-    public function getType(): ?string
+    public function getType(): ?Type
     {
-        return $this->typeName;
-    }
-
-    public function isBuiltIn(): bool
-    {
-        return $this->isBuiltIn;
-    }
-
-    public function allowsNull(): bool
-    {
-        return $this->allowsNull;
+        return $this->type;
     }
 
     public function urlMapping(): ?UrlMapping
@@ -99,11 +86,6 @@ final class LivePropMetadata
         return $this->liveProp->serializationContext();
     }
 
-    public function collectionValueType(): ?Type
-    {
-        return $this->collectionValueType;
-    }
-
     public function getFormat(): ?string
     {
         return $this->liveProp->format();
@@ -132,12 +114,12 @@ final class LivePropMetadata
         }
 
         if (!method_exists($component, $modifier)) {
-            throw new \LogicException(sprintf('Method "%s::%s()" given in LiveProp "modifier" does not exist.', $component::class, $modifier));
+            throw new \LogicException(\sprintf('Method "%s::%s()" given in LiveProp "modifier" does not exist.', $component::class, $modifier));
         }
 
-        $modifiedLiveProp = $component->{$modifier}($this->liveProp);
+        $modifiedLiveProp = $component->{$modifier}($this->liveProp, $this->getName());
         if (!$modifiedLiveProp instanceof LiveProp) {
-            throw new \LogicException(sprintf('Method "%s::%s()" should return an instance of "%s" (given: "%s").', $component::class, $modifier, LiveProp::class, get_debug_type($modifiedLiveProp)));
+            throw new \LogicException(\sprintf('Method "%s::%s()" should return an instance of "%s" (given: "%s").', $component::class, $modifier, LiveProp::class, get_debug_type($modifiedLiveProp)));
         }
 
         $clone = clone $this;

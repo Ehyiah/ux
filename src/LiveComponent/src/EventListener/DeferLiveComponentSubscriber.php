@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * This file is part of the Symfony package.
  *
@@ -31,6 +29,10 @@ final class DeferLiveComponentSubscriber implements EventSubscriberInterface
     public function onPostMount(PostMountEvent $event): void
     {
         $data = $event->getData();
+        if (!$event->getMetadata()->get('live', false)) {
+            // Not a live component
+            return;
+        }
 
         if (\array_key_exists('defer', $data)) {
             trigger_deprecation('symfony/ux-live-component', '2.17', 'The "defer" attribute is deprecated and will be removed in 3.0. Use the "loading" attribute instead set to the value "defer".');
@@ -44,10 +46,10 @@ final class DeferLiveComponentSubscriber implements EventSubscriberInterface
             // Ignored values: false / null / ''
             if ($loading = $data['loading']) {
                 if (!\is_scalar($loading)) {
-                    throw new \InvalidArgumentException(sprintf('The "loading" attribute value must be scalar, "%s" passed.', get_debug_type($loading)));
+                    throw new \InvalidArgumentException(\sprintf('The "loading" attribute value must be scalar, "%s" passed.', get_debug_type($loading)));
                 }
                 if (!\in_array($loading, ['defer', 'lazy'], true)) {
-                    throw new \InvalidArgumentException(sprintf('Invalid "loading" attribute value "%s". Accepted values: "defer" and "lazy".', $loading));
+                    throw new \InvalidArgumentException(\sprintf('Invalid "loading" attribute value "%s". Accepted values: "defer" and "lazy".', $loading));
                 }
                 $event->addExtraMetadata('loading', $loading);
             }

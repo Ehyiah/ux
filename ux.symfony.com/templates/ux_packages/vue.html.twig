@@ -1,4 +1,4 @@
-{% extends 'packageBase.html.twig' %}
+{% extends 'ux_packages/package.html.twig' %}
 
 {% block importmap %}
     {{ importmap('app-vue') }}
@@ -20,23 +20,22 @@
 {% endblock %}
 
 {% block code_block_left %}
-    <twig:CodeBlock filename="templates/ux_packages/vue.html.twig" height="350px"/>
+    <twig:CodeBlock filename="assets/vue/controllers/PackageSearch.js" height="300px" />
 {% endblock %}
 
 {% block code_block_right %}
     <twig:CodeBlock
-        filename="assets/vue/controllers/PackageSearch.js"
-        height="350px"
+        filename="templates/ux_packages/vue.html.twig"
+        height="300px"
         language="html"
+        targetTwigBlock="demo_content"
     />
 {% endblock %}
 
 {% block demo_title %}UX Vue.js{% endblock %}
 
 {% block demo_content %}
-    <div {{ vue_component('PackageSearch', {
-        packages: packagesData
-    }) }}>
-        Loading... <i class="fas fa-cog fa-spin fa-3x"></i>
+    <div {{ vue_component('PackageSearch', {packages: packagesData}) }}>
+        Loading...
     </div>
 {% endblock %}

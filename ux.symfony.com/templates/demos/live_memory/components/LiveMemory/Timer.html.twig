@@ -1,5 +1,5 @@
 <div {{ attributes.defaults({
-    'class': 'LiveMemory-Timer' ~ (this.blinking ? ' LiveMemory-Timer--blinking' : '')
+    class: 'LiveMemory-Timer' ~ (this.blinking ? ' LiveMemory-Timer--blinking' : '')
 }) }}
     {% if this.remainingTime > (this.warningThreshold * 1000) %}
         data-poll="delay({{ this.remainingTime - (this.warningThreshold * 1000) }})|tick"
@@ -27,7 +27,7 @@
                 '--duration': digit.steps * digit.unit,
                 '--steps': digit.steps,
                 '--iterations': digit.iterations,
-             }|map((v, k) => '%s: %s;'|format(k,v)) %}
+             }|map((v, k) => '%s: %s;'|format(k, v)) %}
 
             <div class="LiveMemory-Timer-Digit" style="{{ style|join(' ') }}" data-unit="{{ digit.unit }}">
                 <ul>

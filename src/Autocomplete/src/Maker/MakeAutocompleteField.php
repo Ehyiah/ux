@@ -53,7 +53,7 @@ class MakeAutocompleteField extends AbstractMaker
         return 'Generates an Ajax-autocomplete form field class for symfony/ux-autocomplete.';
     }
 
-    public function configureCommand(Command $command, InputConfiguration $inputConfig)
+    public function configureCommand(Command $command, InputConfiguration $inputConfig): void
     {
         $command
              ->setHelp(<<<EOF
@@ -66,12 +66,12 @@ EOF)
         ;
     }
 
-    public function configureDependencies(DependencyBuilder $dependencies)
+    public function configureDependencies(DependencyBuilder $dependencies): void
     {
         $dependencies->addClassDependency(FormInterface::class, 'symfony/form');
     }
 
-    public function interact(InputInterface $input, ConsoleStyle $io, Command $command)
+    public function interact(InputInterface $input, ConsoleStyle $io, Command $command): void
     {
         if (null === $this->doctrineHelper) {
             throw new \LogicException('Somehow the DoctrineHelper service is missing from MakerBundle.');
@@ -87,14 +87,14 @@ EOF)
 
         $this->entityClass = $io->askQuestion($question);
 
-        $defaultClass = Str::asClassName(sprintf('%s AutocompleteField', $this->entityClass));
+        $defaultClass = Str::asClassName(\sprintf('%s AutocompleteField', $this->entityClass));
         $this->className = $io->ask(
-            sprintf('Choose a name for your entity field class (e.g. <fg=yellow>%s</>)', $defaultClass),
+            \sprintf('Choose a name for your entity field class (e.g. <fg=yellow>%s</>)', $defaultClass),
             $defaultClass
         );
     }
 
-    public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator)
+    public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator): void
     {
         if (null === $this->doctrineHelper) {
             throw new \LogicException('Somehow the DoctrineHelper service is missing from MakerBundle.');
@@ -146,7 +146,7 @@ EOF)
             '',
             '    <comment>$builder</comment>',
             '        <comment>// ...</comment>',
-            sprintf('        <comment>->add(\'%s\', %s::class)</comment>', Str::asLowerCamelCase($entityClassDetails->getShortName()), $classDetails->getShortName()),
+            \sprintf('        <comment>->add(\'%s\', %s::class)</comment>', Str::asLowerCamelCase($entityClassDetails->getShortName()), $classDetails->getShortName()),
             '    <comment>;</>',
         ]);
     }

@@ -39,7 +39,7 @@ To set up the development environment, you need the following tools:
 
 - [PHP](https://www.php.net/downloads.php) 8.1 or higher
 - [Composer](https://getcomposer.org/download/)
-- [Node.js](https://nodejs.org/en/download/package-manager) 22.11 or higher
+- [Node.js](https://nodejs.org/en/download/package-manager) 22.18 or higher
 - [Corepack](https://github.com/nodejs/corepack)
 - [PNPM](https://pnpm.io/) 10.13 or higher
 
@@ -82,14 +82,64 @@ To help you with assets, you can run the following commands in a specific packag
   - `pnpm run build`: build (compile) assets from the package,
   - `pnpm run watch`: watch for modifications and rebuild assets from the package,
   - `pnpm run test`: run the tests from the package,
+  - `pnpm run test:unit`: run the Unit tests from the package,
+  - `pnpm run test:browser`: run the Browser tests from the package, in a headless browser
+  - `pnpm run test:browser:ui`: run the Browser tests from the package in interactive mode, allowing you to see the tests running in a browser window and debug them if needed
   - `pnpm run check`: run the formatter, linter, and sort imports, and fails if any modifications
   - `pnpm run check --write`: run the formatter, linter, imports sorting, and write modifications
 
 Thanks to [PNPM Workspaces](https://pnpm.io/workspaces), you can also run these commands from the root directory of the project:
   - `pnpm run build`: build (compile) assets from **all** packages,
   - `pnpm run test`: run the tests from **all** packages,
+  - `pnpm run test:unit`: run the Unit tests from **all** packages,
+  - `pnpm run test:browser`: run the Browser tests from **all** packages, in a headless browser
   - `pnpm run check`: run the formatter, linter, and sort imports for **all** packages, and fails if any modifications
   - `pnpm run check --write`: run the formatter, linter, imports sorting for **all** packages, and write modifications
+
+#### Working with Unit tests
+
+We use [Vitest](https://vitest.dev/) for unit testing of the assets,
+and tests files are located in the `assets/test/unit/` directory of each UX package,
+for example: `src/Vue/assets/test/unit/render_controller.test.ts`.
+
+**Running tests:**
+- At the project's root, you can run the following commands:
+  - `pnpm run test:unit`: runs the unit tests for **all** UX packages
+- Inside the `assets/` directory of each UX package, you can run the following commands:
+  - `pnpm run test:unit`: runs the unit tests for the package
+
+> [!IMPORTANT]
+> The command `pnpm run test:unit` ensure that each possible combination of dependencies is tested
+> (e.g., `"chart.js": "^3.4.1 || ^4.0"` for UX Chartjs).
+> Thus it may take some time to run, and it may be not recommended to use watch mode.
+
+#### Working with End-to-End (E2E) tests
+
+> [!NOTE]
+> E2E tests simulate real user interactions in a browser, to ensure that the
+> UX packages work as expected in a real-world scenario.
+
+Symfony UX use [Playwright](https://playwright.dev/) for browser automation and testing,
+and a dedicated Symfony application located in the [`apps/e2e/`](./apps/e2e/) directory,
+which contains many examples of Symfony UX packages usage.
+
+Tests files are located in the `assets/test/browser/` directory of each UX package,
+for example: `src/Vue/assets/test/browser/vue.test.ts`.
+
+**Setup:**
+1. Ensure to have followed the steps in the [Setting up the development environment](#setting-up-the-development-environment) section
+2. Read and follow the instructions in the [`apps/e2e/README.md`](./apps/e2e/README.md) file,
+
+**Running tests:**
+- At the project's root, you can run the following commands:
+  - `pnpm run test:browser`: runs the browser tests for **all** UX packages, using a headless browser
+- Inside the `assets/` directory of each UX package, you can run the following commands:
+  - `pnpm run test:browser`: runs browser tests for the package, using a headless browser
+  - `pnpm run test:browser:ui`: runs the browser tests in interactive mode, allowing you to see the tests running in a browser window and debug them if needed
+
+> [!IMPORTANT]
+> Due to their nature, E2E tests may be slower to run than unit tests.
+> During the development, we recommend to run `pnpm run test:browser` or `pnpm run test:browser:ui` for a specific UX package.
 
 ### Working on documentation
 
@@ -112,7 +162,7 @@ docker run --rm -it -e DOCS_DIR='/docs' -v ${PWD}:/docs  oskarstark/doctor-rst -
 ```shell
 $ git checkout 2.x && \
   git fetch upstream && \
-  git rebase upstream/2.x && \
+  git reset --hard upstream/2.x && \
   git push origin 2.x
 ```
 

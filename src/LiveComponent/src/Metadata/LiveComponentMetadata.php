@@ -69,19 +69,20 @@ class LiveComponentMetadata
     /**
      * @return UrlMapping[]
      */
-    public function getAllUrlMappings(): iterable
+    public function getAllUrlMappings(object $component): array
     {
         $urlMappings = [];
-        foreach ($this->livePropsMetadata as $livePropMetadata) {
+
+        foreach ($this->getAllLivePropsMetadata($component) as $livePropMetadata) {
             if ($livePropMetadata->urlMapping()) {
-                $urlMappings[$livePropMetadata->getName()] = $livePropMetadata->urlMapping();
+                $urlMappings[$livePropMetadata->calculateFieldName($component, $livePropMetadata->getName())] = $livePropMetadata->urlMapping();
             }
         }
 
         return $urlMappings;
     }
 
-    public function hasQueryStringBindings($component): bool
+    public function hasQueryStringBindings(object $component): bool
     {
         foreach ($this->getAllLivePropsMetadata($component) as $livePropMetadata) {
             if ($livePropMetadata->urlMapping()) {

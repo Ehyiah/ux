@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 2.31
+
+-  Display a warning when trying to define `bridgeOptions.content` for a `Marker` that already has an `Icon`
+
+## 2.30
+
+-  Ensure compatibility with PHP 8.5
+
+## 2.29.0
+
+-  Add Symfony 8 support
+
 ## 2.27
 
 -   Fix `InfoWindow` compatibility with new `Circle` and `Rectangle` supported elements.

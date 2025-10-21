@@ -1,9 +1,22 @@
 # CHANGELOG
 
+## 2.31
+
+-  Add `fitBoundsToMarkers` parameter to `ux_map()` Twig function
+
+## 2.30
+
+-  Ensure compatibility with PHP 8.5
+-  Deprecate option `title` from `Polygon`, `Polyline`, `Rectangle` and `Circle` in favor of `infoWindow`
+
+## 2.29.0
+
+-  Add Symfony 8 support
+-  Add `Cluster` class and `ClusteringAlgorithmInterface` with two implementations `GridClusteringAlgorithm` and `MortonClusteringAlgorithm`
+
 ## 2.28
 
 -  Add `minZoom` and `maxZoom` options to `Map` to set the minimum and maximum zoom levels
--  The package is not experimental anymore
 
 ## 2.27
 

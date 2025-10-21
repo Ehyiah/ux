@@ -28,7 +28,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                php-version: ['8.1', '8.2', '8.3', '8.4']
+                php-version: ['8.1', '8.2', '8.3', '8.4', '8.5']
                 dependency-version: ['']
                 symfony-version: ['']
                 minimum-stability: ['stable']
@@ -36,7 +36,7 @@ jobs:
                 include:
                     # dev packages (probably not needed to have multiple such jobs)
                     -   minimum-stability: 'dev'
-                        php-version: '8.4'
+                        php-version: '8.5'
                     # lowest deps
                     -   php-version: '8.1'
                         dependency-version: 'lowest'
@@ -46,9 +46,17 @@ jobs:
                     -   php-version: '8.1'
                         symfony-version: '6.4.*'
                         os: 'windows-latest'
+                    # Explicit Symfony versions
+                    -  php-version: '8.2'
+                       symfony-version: '7.4.x-dev' # TODO: change to '7.4' when Symfony 7.4 is released
+                    -  php-version: '8.5'
+                       symfony-version: '8.0.x-dev' # TODO: change to '8.0' when Symfony 8.0 is released
+                       minimum-stability: 'dev' # TODO: remove when Symfony 8.0 is released
 
         env:
-            SYMFONY_REQUIRE: ${{ matrix.symfony-version || '>=5.4' }}
+            SYMFONY_REQUIRE: ${{ matrix.symfony-version || '>=5.4' }} # TODO: To change to '>=6.4' in 3.x
+            # https://github.com/spatie/phpunit-snapshot-assertions#usage-in-ci
+            CREATE_SNAPSHOTS: false
         steps:
             - uses: actions/checkout@v4
 
@@ -57,7 +65,7 @@ jobs:
                   echo COLUMNS=120 >> $GITHUB_ENV
                   echo COMPOSER_MIN_STAB='composer config minimum-stability ${{ matrix.minimum-stability || 'stable' }} --ansi' >> $GITHUB_ENV
                   echo COMPOSER_UP='composer update ${{ matrix.dependency-version == 'lowest' && '--prefer-lowest' || '' }} --no-progress --no-interaction --ansi' >> $GITHUB_ENV
-                  echo PHPUNIT='vendor/bin/simple-phpunit' >> $GITHUB_ENV
+                  echo PHPUNIT='vendor/bin/simple-phpunit ${{ matrix.os == 'windows-latest' && '--exclude-group transient-on-windows' || '' }}' >> $GITHUB_ENV
                   [ 'lowest' = '${{ matrix.dependency-version }}' ] && export SYMFONY_DEPRECATIONS_HELPER=weak
 
                   # Swup and Typed have no tests, Turbo has its own workflow file
@@ -65,7 +73,7 @@ jobs:
 
                   # Exclude deprecated packages when testing against lowest dependencies
                   if [ "${{ matrix.dependency-version }}" = "lowest" ]; then
-                    EXCLUDED_PACKAGES="$EXCLUDED_PACKAGES|LazyImage"
+                    EXCLUDED_PACKAGES="$EXCLUDED_PACKAGES|LazyImage|TogglePassword"
                   fi
 
                   PACKAGES=$(find src/ -mindepth 2 -type f -name composer.json -not -path "*/vendor/*" -printf '%h\n' | sed 's/^src\///' | grep -Ev "$EXCLUDED_PACKAGES" | sort |  tr '\n' ' ')
@@ -135,21 +143,20 @@ jobs:
                 fi
     js:
         runs-on: ubuntu-latest
-        strategy:
-            fail-fast: false
-            matrix:
-                node-version: [ '18.x', '20.x', '22.x', '24.x' ]
         steps:
             - uses: actions/checkout@v4
+
             - run: npm i -g corepack && corepack enable
             - uses: actions/setup-node@v4
               with:
-                node-version: ${{ matrix.node-version }}
+                node-version-file: '.nvmrc'
                 cache: 'pnpm'
                 cache-dependency-path: |
                   pnpm-lock.yaml
                   package.json
                   src/**/package.json
-            - run: pnpm install --frozen-lockfile
-            - run: pnpm exec playwright install chromium
-            - run: pnpm run test
+
+            - name: Install root JS dependencies
+              run: pnpm install --frozen-lockfile
+
+            - run: pnpm run test:unit

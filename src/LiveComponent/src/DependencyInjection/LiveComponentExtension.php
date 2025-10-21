@@ -24,6 +24,7 @@ use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Parameter;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\ComponentValidator;
 use Symfony\UX\LiveComponent\ComponentValidatorInterface;
@@ -53,7 +54,6 @@ use Symfony\UX\LiveComponent\Util\LiveComponentStack;
 use Symfony\UX\LiveComponent\Util\LiveControllerAttributesCreator;
 use Symfony\UX\LiveComponent\Util\RequestPropsExtractor;
 use Symfony\UX\LiveComponent\Util\TwigAttributeHelperFactory;
-use Symfony\UX\LiveComponent\Util\UrlFactory;
 use Symfony\UX\TwigComponent\ComponentFactory;
 use Symfony\UX\TwigComponent\ComponentRenderer;
 
@@ -66,7 +66,7 @@ final class LiveComponentExtension extends Extension implements PrependExtension
 {
     public const TEMPLATES_MAP_FILENAME = 'live_components_twig_templates.map';
 
-    public function prepend(ContainerBuilder $container)
+    public function prepend(ContainerBuilder $container): void
     {
         // Register the form theme if TwigBundle is available
         $bundles = $container->getParameter('kernel.bundles');
@@ -139,11 +139,10 @@ final class LiveComponentExtension extends Extension implements PrependExtension
         ;
 
         $container->register('ux.live_component.live_url_subscriber', LiveUrlSubscriber::class)
-            ->setArguments([
-                new Reference('ux.live_component.metadata_factory'),
-                new Reference('ux.live_component.url_factory'),
-            ])
             ->addTag('kernel.event_subscriber')
+            ->addTag('container.service_subscriber', ['key' => LiveComponentHydrator::class, 'id' => 'ux.live_component.component_hydrator'])
+            ->addTag('container.service_subscriber', ['key' => LiveComponentMetadataFactory::class, 'id' => 'ux.live_component.metadata_factory'])
+            ->addTag('container.service_subscriber', ['key' => RouterInterface::class, 'id' => 'router'])
         ;
 
         $container->register('ux.live_component.live_responder', LiveResponder::class);
@@ -211,9 +210,6 @@ final class LiveComponentExtension extends Extension implements PrependExtension
         ;
 
         $container->register('ux.live_component.attribute_helper_factory', TwigAttributeHelperFactory::class);
-
-        $container->register('ux.live_component.url_factory', UrlFactory::class)
-            ->setArguments([new Reference('router')]);
 
         $container->register('ux.live_component.live_controller_attributes_creator', LiveControllerAttributesCreator::class)
             ->setArguments([

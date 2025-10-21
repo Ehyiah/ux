@@ -2,7 +2,7 @@ Twig Components
 ===============
 
 Twig components give you the power to bind an object to a template,
-making it easier to render and re-use small template "units" - like an
+making it easier to render and reuse small template "units" - like an
 "alert", markup for a modal, or a category sidebar:
 
 Every component consists of (1) a class::
@@ -40,8 +40,6 @@ Enjoy your new component!
 
 .. image:: images/alert-example.png
     :alt: Example of the Alert Component
-
-    Example of the Alert Component
 
 This brings the familiar "component" system from client-side frameworks
 into Symfony. Combine this with `Live Components`_, to create
@@ -477,8 +475,8 @@ The following code won't work as expected::
 
         public function mount(): void
         {
-            {# ❌ this won't work: at this point $type still has its default value.
-                   Passed values are not yet available in props. #}
+            // ❌ this won't work: at this point $type still has its default value.
+            // Passed values are not yet available in props.
             if ('error' === $this->type) {
                 // ...
             }
@@ -493,8 +491,8 @@ untyped and has no default). If you need a prop's value, declare a parameter in
 
     public function mount(string $type): void
     {
-        {# ✅ this works as expected: the $type argument in PHP has the value
-               passed to the 'type' prop in the Twig template #}
+        // ✅ this works as expected: the $type argument in PHP has the value
+        // passed to the 'type' prop in the Twig template
         if ('error' === $type) {
             // ...
         }
@@ -702,12 +700,14 @@ You can also pass a variable (prop) into your template:
     </div>
 
 To tell the system that ``icon`` and ``type`` are props and not attributes, use the
-``{% props %}`` tag at the top of your template.
+``{% props %}`` tag at the top of your template. Props are required by default, but
+it is possible to set a default value with ``=``:
 
 .. code-block:: html+twig
 
     {# templates/components/Button.html.twig #}
-    {% props icon = null, type = 'primary' %}
+    {# prop "icon" is required, but prop "type" has a default value to "primary" #}
+    {% props icon, type = 'primary' %}
 
     <button {{ attributes.defaults({class: 'btn btn-'~type}) }}>
         {% block content %}{% endblock %}
@@ -715,6 +715,19 @@ To tell the system that ``icon`` and ``type`` are props and not attributes, use 
             <span class="fa-solid fa-{{ icon }}"></span>
         {% endif %}
     </button>
+
+Examples of usage:
+
+.. code-block:: html+twig
+
+    {# property "icon" is missing, an exception is thrown #}
+    <twig:Button>Share</twig:Button>
+
+    {# property "icon" is passed, property "type" use its default value "primary" #}
+    <twig:Button icon="share">Share</twig:Button>
+
+    {# both properties "icon" and "type" are passed #}
+    <twig:Button icon="share" type="secondary>Share</twig:Button>
 
 .. _embedded-components:
 
@@ -921,7 +934,7 @@ For example, imagine we want to create a ``SuccessAlert`` component:
         We will successfully <em>forward</em> this block content!
     <twig:SuccessAlert>
 
-We already have a generic ``Alert`` component, so let's re-use it:
+We already have a generic ``Alert`` component, so let's reuse it:
 
 .. code-block:: html+twig
 

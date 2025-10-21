@@ -56,7 +56,7 @@ Renderer
 .. tip::
 
     Read the `Symfony UX Map Leaflet bridge docs`_ and the
-    `Symfony UX Map Google Maps brige docs`_ to learn about the configuration
+    `Symfony UX Map Google Maps bridge docs`_ to learn about the configuration
     options available for each renderer.
 
 Create a map
@@ -191,9 +191,9 @@ You can also add Polygons, which represents an area enclosed by a series of ``Po
 
     `Polygon` with holes is available since UX Map 2.26.
 
-Since UX Map 2.26, you can also create polygons with holes in them, by passing an array of `array<Point>` to `points` parameter::
+Since UX Map 2.26, you can create polygons with holes by using an array of ``array<Point>``::
 
-    // Draw a polygon with a hole in it, on the French map
+    // Draw a polygon with a hole in it, on the France map
     $map->addPolygon(new Polygon(points: [
         // First path, the outer boundary of the polygon
         [
@@ -203,7 +203,7 @@ Since UX Map 2.26, you can also create polygons with holes in them, by passing a
             new Point(43.296482, 5.369780), // Marseille
             new Point(44.837789, -0.579180), // Bordeaux
         ],
-        // Second path, it will make a hole in the previous one
+        // Second path, making a hole in the first path
         [
             new Point(45.833619, 1.261105), // Limoges
             new Point(45.764043, 4.835659), // Lyon
@@ -237,7 +237,6 @@ You can add Circles, which represents a circular area defined by a center point 
     $map->addCircle(new Circle(
         center: new Point(48.8566, 2.3522),
         radius: 5_000, // 5km
-        title: 'Paris',
         infoWindow: new InfoWindow(
             content: 'A 5km radius circle centered on Paris',
         ),
@@ -251,7 +250,6 @@ You can add Rectangles, which represents a rectangular area defined by two corne
     $map->addRectangle(new Rectangle(
         southWest: new Point(48.8566, 2.3522), // Paris
         northEast: new Point(50.6292, 3.0573), // Lille
-        title: 'Paris to Lille',
         infoWindow: new InfoWindow(
             content: 'A rectangle from Paris to Lille',
         ),
@@ -331,11 +329,16 @@ templates. The function accepts the same arguments as the ``Map`` class:
                 infoWindow: { content: 'Welcome to <b>New York</b>' }
             },
         ],
+        fitBoundsToMarkers: true,
         attributes: {
             class: 'foo',
             style: 'height: 800px; width: 100%; border: 4px solid red; margin-block: 10vh;',
         }
     ) }}
+
+.. versionadded:: 2.31
+
+    `fitBoundsToMarkers` option for the twig function is available since UX Map 2.31.
 
 Twig Component ``<twig:ux:map />``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -356,6 +359,7 @@ Alternatively, you can use the ``<twig:ux:map />`` component.
                 "infoWindow": {"content": "Welcome to <b>New York</b>"}
             }
         ]'
+        :fitBoundsToMarkers="true",
         class="foo"
         style="height: 800px; width: 100%; border: 4px solid red; margin-block: 10vh;"
     />
@@ -365,6 +369,10 @@ The ``<twig:ux:map />`` component requires the `Twig Component`_ package.
 .. code-block:: terminal
 
     $ composer require symfony/ux-twig-component
+
+.. versionadded:: 2.31
+
+    `fitBoundsToMarkers` option for the twig component is available since UX Map 2.31.
 
 Interact with the map
 ~~~~~~~~~~~~~~~~~~~~~
@@ -504,7 +512,7 @@ Symfony UX Map allows you to extend its default behavior using a custom Stimulus
          */
         _onPolygonBeforeCreate(event) {
             console.log(event.detail.definition);
-            // { title: 'My polygon', points: [ { lat: 48.8566, lng: 2.3522 }, { lat: 45.7640, lng: 4.8357 }, { lat: 43.2965, lng: 5.3698 }, ... ], ... }
+            // { points: [ { lat: 48.8566, lng: 2.3522 }, { lat: 45.7640, lng: 4.8357 }, { lat: 43.2965, lng: 5.3698 }, ... ], ... }
         }
 
         /**
@@ -522,7 +530,7 @@ Symfony UX Map allows you to extend its default behavior using a custom Stimulus
          */
         _onPolylineBeforeCreate(event) {
             console.log(event.detail.definition);
-            // { title: 'My polyline', points: [ { lat: 48.8566, lng: 2.3522 }, { lat: 45.7640, lng: 4.8357 }, { lat: 43.2965, lng: 5.3698 }, ... ], ... }
+            // {  points: [ { lat: 48.8566, lng: 2.3522 }, { lat: 45.7640, lng: 4.8357 }, { lat: 43.2965, lng: 5.3698 }, ... ], ... }
         }
 
         /**
@@ -536,7 +544,7 @@ Symfony UX Map allows you to extend its default behavior using a custom Stimulus
 
         _onCircleBeforeCreate(event) {
             console.log(event.detail.definition);
-            // { title: 'My circle', center: { lat: 48.8566, lng: 2.3522 }, radius: 1000, ... }
+            // { center: { lat: 48.8566, lng: 2.3522 }, radius: 1000, ... }
         }
 
         _onCircleAfterCreate(event) {
@@ -546,7 +554,7 @@ Symfony UX Map allows you to extend its default behavior using a custom Stimulus
 
         _onRectangleBeforeCreate(event) {
             console.log(event.detail.definition);
-            // { title: 'My rectangle', southWest: { lat: 48.8566, lng: 2.3522 }, northEast: { lat: 45.7640, lng: 4.8357 }, ... }
+            // { southWest: { lat: 48.8566, lng: 2.3522 }, northEast: { lat: 45.7640, lng: 4.8357 }, ... }
         }
 
         _onRectangleAfterCreate(event) {
@@ -564,7 +572,7 @@ Then, you can use this controller in your template:
 .. tip::
 
     Read the `Symfony UX Map Leaflet bridge docs`_ and the
-    `Symfony UX Map Google Maps brige docs`_ to learn about the exact code
+    `Symfony UX Map Google Maps bridge docs`_ to learn about the exact code
     needed to customize the markers.
 
 Advanced: Low-level options
@@ -727,7 +735,7 @@ property available in ``Map``, ``Marker``, ``InfoWindow``, ``Polygon``, ``Polyli
     ));
 
 On the JavaScript side, you can access these extra data by listening to ``ux:map:pre-connect``,
-``ux:map:connect``, ``ux:map:*:before-create``, ``ux:map:*:after-create`` events::
+``ux:map:connect``, ``ux:map:*:before-create``, ``ux:map:*:after-create`` events:
 
 .. code-block:: javascript
 
@@ -842,6 +850,45 @@ You can retrieve the map instance using the ``getMap()`` method, and change the 
         </button>
     </div>
 
+Advanced: Clusters
+------------------
+
+.. versionadded:: 2.29
+
+    Clusters were added in UX Map 2.29.
+
+A cluster is a group of points that are close to each other on a map.
+
+Clustering reduces clutter and improves performance when displaying many points.
+This makes maps easier to read and faster to render.
+
+UX Map supports two algorithms:
+
+- **Grid**: Fast, divides map into cells.
+- **Morton**: Uses Z-order curves for spatial locality.
+
+Create a clustering algorithm, cluster your points, and add cluster markers::
+
+    use Symfony\UX\Map\Cluster\GridClusteringAlgorithm;
+    use Symfony\UX\Map\Cluster\MortonClusteringAlgorithm;
+    use Symfony\UX\Map\Point;
+
+    // Initialize clustering algorithm
+    $clusteringAlgorithm = new GridClusteringAlgorithm();
+    // or
+    // $clusteringAlgorithm = new MortonClusteringAlgorithm();
+
+    // Create clusters of points
+    $points = [new Point(48.8566, 2.3522), new Point(45.7640, 4.8357), /* ... */];
+    $clusters = $clusteringAlgorithm->cluster($points, zoom: 5.0);
+
+    // Iterate over each cluster
+    foreach ($clusters as $cluster) {
+        $cluster->getCenter(); // A Point, representing the cluster center
+        $cluster->getPoints(); // A list of Point
+        $cluster->count(); // The number of points in the cluster
+    }
+
 Backward Compatibility promise
 ------------------------------
 
@@ -852,7 +899,7 @@ https://symfony.com/doc/current/contributing/code/bc.html
 .. _`the Symfony UX initiative`: https://ux.symfony.com/
 .. _`Google Maps`: https://github.com/symfony/ux-google-map
 .. _`Leaflet`: https://github.com/symfony/ux-leaflet-map
-.. _`Symfony UX Map Google Maps brige docs`: https://github.com/symfony/ux/blob/2.x/src/Map/src/Bridge/Google/README.md
+.. _`Symfony UX Map Google Maps bridge docs`: https://github.com/symfony/ux/blob/2.x/src/Map/src/Bridge/Google/README.md
 .. _`Symfony UX Map Leaflet bridge docs`: https://github.com/symfony/ux/blob/2.x/src/Map/src/Bridge/Leaflet/README.md
 .. _`Twig Component`: https://symfony.com/bundles/ux-twig-component/current/index.html
 .. _`Live Actions`: https://symfony.com/bundles/ux-live-component/current/index.html#actions

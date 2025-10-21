@@ -34,7 +34,7 @@ class MapTest extends TestCase
         DummyOptions::unregisterFromNormalizer();
     }
 
-    public function testCenterValidation(): void
+    public function testCenterValidation()
     {
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The map "center" must be explicitly set when not enabling "fitBoundsToMarkers" feature.');
@@ -43,7 +43,7 @@ class MapTest extends TestCase
         $map->toArray();
     }
 
-    public function testZoomValidation(): void
+    public function testZoomValidation()
     {
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('The map "zoom" must be explicitly set when not enabling "fitBoundsToMarkers" feature.');
@@ -54,7 +54,7 @@ class MapTest extends TestCase
         $map->toArray();
     }
 
-    public function testZoomAndCenterCanBeOmittedIfFitBoundsToMarkers(): void
+    public function testZoomAndCenterCanBeOmittedIfFitBoundsToMarkers()
     {
         $map = new Map(
             fitBoundsToMarkers: true
@@ -78,7 +78,7 @@ class MapTest extends TestCase
         ], $array);
     }
 
-    public function testWithMinimumConfiguration(): void
+    public function testWithMinimumConfiguration()
     {
         $map = new Map();
         $map
@@ -103,7 +103,7 @@ class MapTest extends TestCase
         ], $array);
     }
 
-    public function testWithMaximumConfiguration(): void
+    public function testWithMaximumConfiguration()
     {
         $map = new Map();
         $map
@@ -135,7 +135,6 @@ class MapTest extends TestCase
                     new Point(48.853, 2.3499),
                     new Point(48.8566, 2.3522),
                 ],
-                title: 'Polygon 1',
                 infoWindow: null,
             ))
             ->addPolygon(new Polygon(
@@ -144,7 +143,6 @@ class MapTest extends TestCase
                     new Point(45.75, 4.85),
                     new Point(45.77, 4.82),
                 ],
-                title: 'Polygon 2',
                 infoWindow: new InfoWindow(
                     headerContent: '<b>Polygon 2</b>',
                     content: 'A polygon around Lyon with some additional info.',
@@ -159,7 +157,6 @@ class MapTest extends TestCase
                     new Point(48.853, 2.3499),
                     new Point(48.8566, 2.3522),
                 ],
-                title: 'Polyline 1',
                 infoWindow: null,
             ))
             ->addPolyline(new Polyline(
@@ -168,7 +165,6 @@ class MapTest extends TestCase
                     new Point(45.75, 4.85),
                     new Point(45.77, 4.82),
                 ],
-                title: 'Polyline 2',
                 infoWindow: new InfoWindow(
                     headerContent: '<b>Polyline 2</b>',
                     content: 'A polyline around Lyon with some additional info.',
@@ -180,7 +176,6 @@ class MapTest extends TestCase
             ->addCircle(new Circle(
                 center: new Point(48.8566, 2.3522),
                 radius: 500,
-                title: 'Circle around Paris',
                 infoWindow: new InfoWindow(
                     headerContent: '<b>Circle around Paris</b>',
                     content: 'A circle with a radius of 500 meters around Paris.',
@@ -192,7 +187,6 @@ class MapTest extends TestCase
             ->addCircle(new Circle(
                 center: new Point(45.764, 4.8357),
                 radius: 300,
-                title: 'Circle around Lyon',
                 infoWindow: new InfoWindow(
                     headerContent: '<b>Circle around Lyon</b>',
                     content: 'A circle with a radius of 300 meters around Lyon.',
@@ -204,7 +198,6 @@ class MapTest extends TestCase
             ->addRectangle(new Rectangle(
                 southWest: new Point(48.853, 2.3499),
                 northEast: new Point(48.8566, 2.3522),
-                title: 'Rectangle around Paris',
                 infoWindow: new InfoWindow(
                     headerContent: '<b>Rectangle around Paris</b>',
                     content: 'A rectangle around Paris.',
@@ -216,7 +209,6 @@ class MapTest extends TestCase
             ->addRectangle(new Rectangle(
                 southWest: new Point(45.75, 4.85),
                 northEast: new Point(45.77, 4.82),
-                title: 'Rectangle around Lyon',
                 infoWindow: new InfoWindow(
                     headerContent: '<b>Rectangle around Lyon</b>',
                     content: 'A rectangle around Lyon.',
@@ -297,7 +289,7 @@ class MapTest extends TestCase
                         ['lat' => 48.853, 'lng' => 2.3499],
                         ['lat' => 48.8566, 'lng' => 2.3522],
                     ],
-                    'title' => 'Polygon 1',
+                    'title' => null,
                     'infoWindow' => null,
                     'extra' => [],
                     'id' => null,
@@ -308,7 +300,7 @@ class MapTest extends TestCase
                         ['lat' => 45.75, 'lng' => 4.85],
                         ['lat' => 45.77, 'lng' => 4.82],
                     ],
-                    'title' => 'Polygon 2',
+                    'title' => null,
                     'infoWindow' => [
                         'headerContent' => '<b>Polygon 2</b>',
                         'content' => 'A polygon around Lyon with some additional info.',
@@ -328,7 +320,7 @@ class MapTest extends TestCase
                         ['lat' => 48.853, 'lng' => 2.3499],
                         ['lat' => 48.8566, 'lng' => 2.3522],
                     ],
-                    'title' => 'Polyline 1',
+                    'title' => null,
                     'infoWindow' => null,
                     'extra' => [],
                     'id' => null,
@@ -339,7 +331,7 @@ class MapTest extends TestCase
                         ['lat' => 45.75, 'lng' => 4.85],
                         ['lat' => 45.77, 'lng' => 4.82],
                     ],
-                    'title' => 'Polyline 2',
+                    'title' => null,
                     'infoWindow' => [
                         'headerContent' => '<b>Polyline 2</b>',
                         'content' => 'A polyline around Lyon with some additional info.',
@@ -356,7 +348,7 @@ class MapTest extends TestCase
                 [
                     'center' => ['lat' => 48.8566, 'lng' => 2.3522],
                     'radius' => 500,
-                    'title' => 'Circle around Paris',
+                    'title' => null,
                     'infoWindow' => [
                         'headerContent' => '<b>Circle around Paris</b>',
                         'content' => 'A circle with a radius of 500 meters around Paris.',
@@ -371,7 +363,7 @@ class MapTest extends TestCase
                 [
                     'center' => ['lat' => 45.764, 'lng' => 4.8357],
                     'radius' => 300,
-                    'title' => 'Circle around Lyon',
+                    'title' => null,
                     'infoWindow' => [
                         'headerContent' => '<b>Circle around Lyon</b>',
                         'content' => 'A circle with a radius of 300 meters around Lyon.',
@@ -388,7 +380,7 @@ class MapTest extends TestCase
                 [
                     'southWest' => ['lat' => 48.853, 'lng' => 2.3499],
                     'northEast' => ['lat' => 48.8566, 'lng' => 2.3522],
-                    'title' => 'Rectangle around Paris',
+                    'title' => null,
                     'infoWindow' => [
                         'headerContent' => '<b>Rectangle around Paris</b>',
                         'content' => 'A rectangle around Paris.',
@@ -403,7 +395,7 @@ class MapTest extends TestCase
                 [
                     'southWest' => ['lat' => 45.75, 'lng' => 4.85],
                     'northEast' => ['lat' => 45.77, 'lng' => 4.82],
-                    'title' => 'Rectangle around Lyon',
+                    'title' => null,
                     'infoWindow' => [
                         'headerContent' => '<b>Rectangle around Lyon</b>',
                         'content' => 'A rectangle around Lyon.',
@@ -432,7 +424,7 @@ class MapTest extends TestCase
      *           [null, 5, 2, "The \"zoom\" must be less than or equal to \"maxZoom\"."]
      *           [2.1, null, 2.0, "The \"minZoom\" must be less than or equal to \"maxZoom\"."]
      */
-    public function testZoomsValidation(?float $minZoom, ?float $zoom, ?float $maxZoom, string $expectedExceptionMessage): void
+    public function testZoomsValidation(?float $minZoom, ?float $zoom, ?float $maxZoom, string $expectedExceptionMessage)
     {
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage($expectedExceptionMessage);

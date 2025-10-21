@@ -13,6 +13,7 @@ namespace Symfony\UX\LiveComponent\Metadata;
 
 use Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface;
 use Symfony\Component\PropertyInfo\Type as LegacyType;
+use Symfony\Component\TypeInfo\Exception\UnsupportedException;
 use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\TypeInfo\Type\CollectionType;
 use Symfony\Component\TypeInfo\TypeResolver\TypeResolver;
@@ -83,7 +84,7 @@ class LiveComponentMetadataFactory implements ResetInterface
     {
         $reflectionType = $property->getType();
         if ($reflectionType instanceof \ReflectionUnionType || $reflectionType instanceof \ReflectionIntersectionType) {
-            throw new \LogicException(\sprintf('Union or intersection types are not supported for LiveProps. You may want to change the type of property %s in %s.', $property->getName(), $property->getDeclaringClass()->getName()));
+            throw new \LogicException(\sprintf('Union or intersection types are not supported for LiveProps. You may want to change the type of property "%s" in "%s".', $property->getName(), $property->getDeclaringClass()->getName()));
         }
 
         // BC layer when "symfony/type-info" is not available
@@ -130,8 +131,12 @@ class LiveComponentMetadataFactory implements ResetInterface
                 // Otherwise, we can use the TypeResolver to convert the ReflectionType to a Type
                 $type = $this->typeResolver->resolve($reflectionType);
             } else {
-                // If no type is available, we default to mixed
-                $type = Type::mixed();
+                try {
+                    $type = $this->typeResolver->resolve($property);
+                } catch (UnsupportedException) {
+                    // If no type is available, we default to mixed
+                    $type = Type::mixed();
+                }
             }
 
             return new LivePropMetadata($property->getName(), $liveProp, $type);

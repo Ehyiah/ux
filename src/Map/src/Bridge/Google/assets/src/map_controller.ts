@@ -188,6 +188,12 @@ export default class extends AbstractMapController<
         }
 
         if (icon) {
+            if (Object.prototype.hasOwnProperty.call(bridgeOptions, 'content')) {
+                console.warn('[Symfony UX Map] Defining "bridgeOptions.content" for a marker with a custom icon is not supported and will be ignored.');
+            } else if (Object.prototype.hasOwnProperty.call(rawOptions, 'content')) {
+                console.warn('[Symfony UX Map] Defining "rawOptions.content" for a marker with a custom icon is not supported and will be ignored.');
+            }
+
             this.doCreateIcon({ definition: icon, element: marker });
         }
 
@@ -212,6 +218,9 @@ export default class extends AbstractMapController<
             ...bridgeOptions,
         });
 
+        /**
+         * @deprecated since Symfony UX Map 2.29, will be removed in 3.0
+         */
         if (title) {
             polygon.set('title', title);
         }
@@ -241,6 +250,9 @@ export default class extends AbstractMapController<
             ...bridgeOptions,
         });
 
+        /**
+         * @deprecated since Symfony UX Map 2.29, will be removed in 3.0
+         */
         if (title) {
             polyline.set('title', title);
         }
@@ -267,6 +279,9 @@ export default class extends AbstractMapController<
             ...bridgeOptions,
         });
 
+        /**
+         * @deprecated since Symfony UX Map 2.29, will be removed in 3.0
+         */
         if (title) {
             circle.set('title', title);
         }
@@ -296,6 +311,9 @@ export default class extends AbstractMapController<
             ...bridgeOptions,
         });
 
+        /**
+         * @deprecated since Symfony UX Map 2.29, will be removed in 3.0
+         */
         if (title) {
             rectangle.set('title', title);
         }

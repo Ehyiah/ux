@@ -66,7 +66,7 @@ class LeafletRendererTest extends RendererTestCase
                 ->addMarker($marker1)
                 ->addMarker($marker2)
                 ->removeMarker($marker1)
-                ->removeMarker($marker2),
+                ->removeMarker('marker2'),
         ];
 
         yield 'with marker remove and new ones added' => [
@@ -103,7 +103,7 @@ class LeafletRendererTest extends RendererTestCase
             'map' => (new Map())
                 ->center(new Point(48.8566, 2.3522))
                 ->zoom(12)
-                ->addCircle(new Circle(center: new Point(48.8566, 2.3522), radius: 1000000, title: 'Paris', id: 'circle1'))
+                ->addCircle(new Circle(center: new Point(48.8566, 2.3522), radius: 1000000, id: 'circle1'))
                 ->addCircle(new Circle(center: new Point(1.1, 2.2), radius: 500, infoWindow: new InfoWindow(content: 'Circle'), id: 'circle2')),
         ];
 
@@ -115,7 +115,6 @@ class LeafletRendererTest extends RendererTestCase
                 ->addRectangle(new Rectangle(
                     southWest: new Point(48.8566, 2.3522),
                     northEast: new Point(48.8566, 2.3522),
-                    title: 'Rectangle',
                     id: 'rectangle1'
                 ))
                 ->addRectangle(new Rectangle(

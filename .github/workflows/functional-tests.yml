@@ -1,3 +1,4 @@
+# Deprecated, will be removed in favor of browser-tests.yml
 name: Functional Tests
 
 defaults:
@@ -20,7 +21,7 @@ jobs:
         strategy:
            fail-fast: false
            matrix:
-               php-version: ['8.1', '8.2', '8.3', '8.4']
+               php-version: ['8.1', '8.2', '8.3', '8.4', '8.5']
                dependency-version: ['']
                symfony-version: ['']
                minimum-stability: ['stable']
@@ -28,7 +29,7 @@ jobs:
                include:
                    # dev packages (probably not needed to have multiple such jobs)
                    -   minimum-stability: 'dev'
-                       php-version: '8.4'
+                       php-version: '8.5'
                    # lowest deps
                    -   php-version: '8.1'
                        dependency-version: 'lowest'
